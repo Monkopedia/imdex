@@ -29,6 +29,7 @@ import com.monkopedia.markdown.handlers.FootnoteBlockHandler
 import com.monkopedia.markdown.handlers.FootnoteHandler
 import com.monkopedia.markdown.handlers.HardLineBreakHandler
 import com.monkopedia.markdown.handlers.HeadingHandler
+import com.monkopedia.markdown.handlers.HtmlBlockHandler
 import com.monkopedia.markdown.handlers.HtmlCommentBlockHandler
 import com.monkopedia.markdown.handlers.HtmlEntityHandler
 import com.monkopedia.markdown.handlers.HtmlInlineHandler
@@ -121,6 +122,12 @@ enum class SupportedNodes(val binder: NodeBinder<*>) {
         NodeBinder(
             com.vladsch.flexmark.ast.HtmlInline::class,
             HtmlInlineHandler
+        )
+    ),
+    HtmlBlock(
+        NodeBinder(
+            com.vladsch.flexmark.ast.HtmlBlock::class,
+            HtmlBlockHandler
         )
     ),
     HtmlEntity(

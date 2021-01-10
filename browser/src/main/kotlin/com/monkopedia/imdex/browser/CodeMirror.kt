@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @file:JsModule("codemirror")
+@file:JsNonModule
 
 package com.monkopedia.imdex.browser
 

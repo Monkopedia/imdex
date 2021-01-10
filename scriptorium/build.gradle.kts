@@ -75,6 +75,24 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
+
+application {
+
+// Define the main class for the application.
+    mainClassName = "com.monkopedia.scriptorium.AppKt"
+}
+
+val fatJar = task("fatJar", type = Jar::class) {
+    baseName = "${project.name}-fat"
+    manifest {
+        attributes["Implementation-Title"] = "iMDex Server"
+        attributes["Implementation-Version"] = "1.0"
+        attributes["Main-Class"] = application.mainClassName
+    }
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    with(tasks["jar"] as CopySpec)
+}
+
 tasks.withType<KotlinCompile>().all {
     kotlinOptions {
         jvmTarget = "1.8"
@@ -82,8 +100,27 @@ tasks.withType<KotlinCompile>().all {
     }
 }
 
-application {
+val browser = rootProject.findProject(":browser")!!
 
-// Define the main class for the application.
-    mainClassName = "com.monkopedia.scriptorium.AppKt"
+val copy = tasks.register<Copy>("copyJsBundleToKtor") {
+    from("${browser.buildDir}/distributions")
+    into("$buildDir/processedResources/web")
+}
+
+tasks.named("copyJsBundleToKtor") {
+    mustRunAfter(browser.tasks["browserProductionWebpack"])
+}
+
+tasks.named("fatJar") {
+    mustRunAfter("copyJsBundleToKtor")
+}
+
+
+sourceSets {
+    main {
+        resources {
+            srcDir("$buildDir/processedResources")
+            compiledBy(copy)
+        }
+    }
 }

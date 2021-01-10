@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target.COMMONJS
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target.COMMONJS2
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target.GLOBAL
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target.WINDOW
+
+buildscript {
+    dependencies {
+        classpath("com.github.node-gradle:gradle-node-plugin:3.0.0-rc5")
+    }
+}
 
 plugins {
     id("org.jetbrains.kotlin.js")
+    id("kotlin-dce-js")
 }
 
 version = "0.1"
@@ -31,6 +41,10 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-js")
+    implementation("io.ktor:ktor-http:1.5.0")
+    implementation("io.ktor:ktor-http-cio:1.5.0")
+    implementation("io.ktor:ktor-client-core:1.5.0")
+    implementation("io.ktor:ktor-io:1.5.0")
     implementation("org.jetbrains:kotlin-extensions:1.0.1-pre.124-kotlin-1.4.10")
     implementation("org.jetbrains:kotlin-css:1.0.0-pre.124-kotlin-1.4.10")
     implementation("org.jetbrains:kotlin-styled:5.2.0-pre.124-kotlin-1.4.10")
@@ -48,8 +62,11 @@ dependencies {
     implementation(npm("css-loader", "3.5.2"))
     implementation(npm("style-loader", "1.1.3"))
     implementation(npm("bootstrap", "^4.4.1"))
+    implementation(npm("crypto", "1.0.1"))
+    implementation(npm("crypto-browserify", "3.12.0"))
     implementation(npm("react", "~16.13.1"))
     implementation(npm("react-dom", "~16.13.1"))
+    implementation(npm("webpack", "4.44.1"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-js")
 }
 
@@ -64,10 +81,16 @@ kotlin {
             //         contentBase = listOf("$buildDir/processedResources/js/main")
             //     )
             // }
-            webpackTask {
-                // cssSupport.enabled = true
-                output.libraryTarget = COMMONJS
+            if (true) {
+                webpackTask {
+                    // cssSupport.enabled = true
+//                    output.libraryTarget = COMMONJS
+                    output.libraryTarget = GLOBAL
+                }
             }
+//            distribution {
+//                directory = File("$projectDir/build/dist")
+//            }
 
             // runTask {
             //     cssSupport.enabled = true
@@ -80,6 +103,12 @@ kotlin {
             //     }
             // }
         }
-        // binaries.executable()
+         binaries.executable()
     }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJsDce::class) {
+    keep += "kotlin.defineModule"
+    keep += "io.ktor.http.Headers"
+    println("Adding to $name")
 }

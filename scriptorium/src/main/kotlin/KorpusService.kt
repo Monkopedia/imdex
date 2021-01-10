@@ -21,7 +21,9 @@ import com.monkopedia.imdex.Korpus
 import com.monkopedia.imdex.Korpus.Document
 import com.monkopedia.imdex.Korpus.DocumentContent
 import com.monkopedia.imdex.Korpus.DocumentMetadata
+import com.monkopedia.imdex.Korpus.DocumentProperties
 import com.monkopedia.imdex.Korpus.DocumentType.FOLDER
+import com.monkopedia.imdex.Korpus.DocumentType.MARKDOWN
 import com.monkopedia.imdex.Scriptorium.KorpusInfo
 import com.monkopedia.ksrpc.Service
 import com.monkopedia.scriptorium.IndexType.CREATE
@@ -114,15 +116,41 @@ class KorpusService(private val config: Config, private val k: KorpusInfo) : Ser
         return content.document.metadata
     }
 
+    override suspend fun updateProperties(properties: DocumentProperties): DocumentMetadata {
+        if (!properties.document.parent.file.exists()) {
+            throw IllegalArgumentException("Parent ${properties.document.parent} does not exist")
+        }
+        if (!properties.document.file.exists()) {
+            throw IllegalArgumentException("${properties.document} does not exist")
+        }
+        val existingProps = properties.document.props
+        val metadata = properties.document.metadata
+        if (properties == existingProps) {
+            return metadata
+        }
+        withContext(Dispatchers.IO) {
+            properties.document.props = properties
+        }
+        pendingLock.withLock {
+            pendingChanges.add(DocumentContent(
+                properties.document, metadata, properties.document.content) to UPDATE)
+        }
+        return metadata
+    }
+
     override suspend fun deleteDocument(document: Document): DocumentMetadata {
-        val oldMetadata = document.metadata
+        val oldMetadata = try {
+            document.metadata
+        } catch (t: Throwable) {
+            DocumentMetadata(if (document.file.isDirectory) FOLDER else MARKDOWN, "", document.name)
+        }
 
         require(document.file.metadataFile.delete()) {
-            "Failed to delete metadata"
+            "Failed to delete metadata for $document"
         }
         require(document.file.delete()) {
             document.metadata = oldMetadata
-            "Failed to delete content"
+            "Failed to delete content for $document"
         }
 
         pendingLock.withLock {
@@ -190,10 +218,19 @@ class KorpusService(private val config: Config, private val k: KorpusInfo) : Ser
     val Document.file: File
         get() = File(target, path)
 
+    val Document.content: String
+        get() = if (file.exists()) file.readText() else ""
+
     var Document.metadata: DocumentMetadata
         get() = file.metadata
         set(value) {
             file.metadata = value
+        }
+
+    var Document.props: Korpus.DocumentProperties
+        get() = file.props ?: Korpus.DocumentProperties(this, emptyMap())
+        set(value) {
+            file.props = value
         }
 }
 

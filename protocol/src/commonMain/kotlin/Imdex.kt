@@ -45,6 +45,7 @@ interface Imdex : RpcService {
     suspend fun metadata(document: Document): DocumentMetadata = map("/metadata", document)
 
     suspend fun fetch(document: Document): Korpus.DocumentContent = map("/fetch", document)
+    suspend fun properties(document: Document): Korpus.DocumentProperties = map("/properties", document)
 
     suspend fun parse(document: Document): ImdexNode = map("/parse", document)
 

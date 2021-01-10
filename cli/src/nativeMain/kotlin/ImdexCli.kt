@@ -48,7 +48,9 @@ class ImdexCli : CliktCommand() {
             Create(this),
             Configure(this),
             Search(this),
-            Fetch(this)
+            Fetch(this),
+            GetProps(this),
+            SetProps(this)
         )
     }
 
@@ -174,6 +176,57 @@ class Fetch(val root: ImdexCli) : CliktCommand(name = "fetch") {
         println(root.scriptorium.imdex(profile).fetch(Korpus.Document(documentId)).content)
     }
 }
+
+class GetProps(val root: ImdexCli) : CliktCommand(name = "get_props") {
+    val korpus by option("-k", "--korpus", help = "ID of korpus to fetch")
+        .required()
+    val documentId by option("-d", "--document", help = "Document ID to fetch")
+        .required()
+    val profile by option("-p", "--profile", help = "The profile to use")
+        .int()
+        .default(ProfileManager.DEFAULT_CMD)
+    override fun run(): Unit = runBlocking {
+        println("Getting props $profile $documentId")
+        try {
+            val result = root.scriptorium.imdex(profile).properties(Korpus.Document(documentId))
+            println("Document: ${result.document.path}")
+            println("${result.properties}")
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+}
+
+class SetProps(val root: ImdexCli) : CliktCommand(name = "set_props") {
+    val korpus by option("-k", "--korpus", help = "ID of korpus to fetch")
+        .required()
+    val documentId by option("-d", "--document", help = "Document ID to fetch")
+        .required()
+    val profile by option("-p", "--profile", help = "The profile to use")
+        .int()
+        .default(ProfileManager.DEFAULT_CMD)
+    val options by option("--set", help = "A property to set").pair().multiple()
+    val unset by option("--unset", help = "A property to remove").multiple()
+
+    override fun run(): Unit = runBlocking {
+        val document = Korpus.Document(documentId)
+        val existingProps = root.scriptorium.imdex(profile)
+            .properties(document)
+            .properties
+            .toMutableMap()
+        for ((k, v) in options) {
+            existingProps[k] = v
+        }
+        for (k in unset) {
+            existingProps.remove(k)
+        }
+        val k = root.scriptorium.korpus(korpus)
+        k.updateProperties(Korpus.DocumentProperties(document, existingProps))
+        k.updateIndex(Unit)
+    }
+}
+
+
 
 val terminalWidth: Int
     get() = 100

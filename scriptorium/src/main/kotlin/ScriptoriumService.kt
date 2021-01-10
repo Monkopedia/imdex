@@ -19,14 +19,15 @@ import com.monkopedia.imdex.Imdex
 import com.monkopedia.imdex.Korpus
 import com.monkopedia.imdex.Korpus.Document
 import com.monkopedia.imdex.Korpus.DocumentMetadata
+import com.monkopedia.imdex.Korpus.DocumentProperties
 import com.monkopedia.imdex.KorpusManager
 import com.monkopedia.imdex.ProfileManager
 import com.monkopedia.imdex.Scriptorium
 import com.monkopedia.imdex.Scriptorium.KorpusInfo
 import com.monkopedia.ksrpc.Service
-import java.io.File
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.io.File
 
 class ScriptoriumService(private val config: Config) : Service(), Scriptorium {
 
@@ -84,7 +85,10 @@ class ScriptoriumService(private val config: Config) : Service(), Scriptorium {
 }
 
 fun File.readFolder(): String {
-    return (listOf(".", "..") + list().filter { !it.endsWith(".imdex") }).joinToString("\n")
+    return (listOf(
+        ".",
+        ".."
+    ) + list().filter { !it.endsWith(".imdex") && !it.endsWith(".props") }).joinToString("\n")
 }
 
 val File.metadataFile: File
@@ -105,4 +109,24 @@ var File.metadata: DocumentMetadata
         metadataFile.writeText(
             Json.encodeToString(DocumentMetadata.serializer(), value)
         )
+    }
+
+val File.propsFile: File
+    get() = File(parentFile, "$name.props")
+
+var File.props: DocumentProperties?
+    get() =
+        if (propsFile.exists()) Json.decodeFromString(
+            DocumentProperties.serializer(),
+            propsFile.readText()
+        )
+        else null
+    set(value) {
+        if (value != null) {
+            propsFile.writeText(
+                Json.encodeToString(DocumentProperties.serializer(), value)
+            )
+        } else {
+            propsFile.delete()
+        }
     }

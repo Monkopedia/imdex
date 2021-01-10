@@ -68,7 +68,7 @@ class SearchResults : RComponent<SearchResultProps, RState>() {
                             tabIndex = "0"
                         }
                         mTypography(
-                            item.documentSection.document.path,
+                            item.documentType.label,
                             variant = MTypographyVariant.caption
                         )
                         mDivider {

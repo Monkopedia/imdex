@@ -15,11 +15,13 @@
  */
 package com.monkopedia.markdown.handlers
 
+import com.monkopedia.markdown.ImdexNodeType
 import com.monkopedia.markdown.NodeHandler
 import com.monkopedia.markdown.ParsingState
 import com.monkopedia.markdown.SpanBuilder
 import com.monkopedia.markdown.SpanType.BR
 import com.monkopedia.markdown.SpanType.CODE_STYLE
+import com.vladsch.flexmark.ast.HtmlBlock
 import com.vladsch.flexmark.ast.HtmlEntity
 import com.vladsch.flexmark.ast.HtmlInline
 
@@ -31,6 +33,24 @@ object HtmlInlineHandler : NodeHandler<HtmlInline> {
     ) {
         val text = node.chars.toString()
         handleHtml(text, state)
+    }
+}
+
+object HtmlBlockHandler : NodeHandler<HtmlBlock> {
+    override suspend fun onNode(
+        node: HtmlBlock,
+        state: ParsingState,
+        handleChildren: suspend () -> Unit
+    ) {
+        val text = node.chars.toString()
+        val span = SpanBuilder(
+            node.startOffset,
+            node.endOffset
+        )
+        state.withSpan(span) {
+            handleHtml(text, state)
+        }
+        state.handler.children.add(span.build(ImdexNodeType.PARAGRAPH))
     }
 }
 
@@ -47,7 +67,7 @@ object HtmlEntityHandler : NodeHandler<HtmlEntity> {
 
 private fun handleHtml(text: String, state: ParsingState) {
     when (text.trim()) {
-        "<br>" -> {
+        "<br>", "<br />", "<br/>" -> {
             state.span.append(BR)
         }
         "<code>" -> {

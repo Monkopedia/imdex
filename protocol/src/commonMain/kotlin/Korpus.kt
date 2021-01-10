@@ -77,6 +77,12 @@ interface Korpus : RpcService {
     )
 
     @Serializable
+    data class DocumentProperties(
+        val document: Document,
+        val properties: Map<String, String>,
+    )
+
+    @Serializable
     data class DocumentSection(
         val document: Document,
         val sections: List<Pair<Int, Int>>,
@@ -112,6 +118,13 @@ interface Korpus : RpcService {
      */
     suspend fun createDocument(document: DocumentContent): DocumentMetadata =
         map("/create", document)
+
+    /**
+     * Update properties for one item in this korpus, won't be included in indexing
+     * until [updateIndex] is called.
+     */
+    suspend fun updateProperties(properties: DocumentProperties): DocumentMetadata =
+        map("/properties", properties)
 
     /**
      * Update content for one item in this korpus, won't be included in indexing

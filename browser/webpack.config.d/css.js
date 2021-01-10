@@ -23,5 +23,21 @@ config.module.rules.push({
     }]
 });
 
+//path = require("path")
+//module.exports = {
+//    name: 'server',
+//    entry: {
+//        main: path.resolve(__dirname, "kotlin\\kindex-browser.js")
+//    },
+//    target: 'web',
+//    output: {
+//        path: './build/bundle',
+//        filename: 'bundle.js'
+//    },
+//    mode: 'production'
+//}
+delete config.output.library;
+delete config.output.libraryTarget;
 
 console.info('Done Loading Webpack config..');
+

@@ -23,6 +23,7 @@ import com.monkopedia.ksrpc.KsrpcType
 import com.monkopedia.ksrpc.KsrpcUri
 import com.monkopedia.ksrpc.connect
 import com.monkopedia.ksrpc.deserialized
+import kotlinx.browser.window
 import react.RBuilder
 import react.RComponent
 import react.RProps
@@ -42,7 +43,9 @@ object iMDexService {
     suspend fun scriptorium() = scriptoriumImpl ?: Scriptorium.wrap(
         KsrpcUri(
             KsrpcType.HTTP,
-            "http://localhost:8001/scriptorium"
+            (window.location.protocol + "//" + window.location.hostname + "${window.location.port?.toIntOrNull()?.let { ":$it" } ?: ""}" + "/scriptorium").also {
+                println("Connecting to $it")
+            }
         ).connect().deserialized()
     ).also {
         scriptoriumImpl = it

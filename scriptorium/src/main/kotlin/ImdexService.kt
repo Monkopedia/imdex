@@ -82,6 +82,10 @@ class ImdexService(
         return file.metadata
     }
 
+    override suspend fun properties(document: Korpus.Document): Korpus.DocumentProperties {
+        return document.props
+    }
+
     override suspend fun fetch(document: Korpus.Document): Korpus.DocumentContent {
         val metadata = document.metadata
         if (metadata.type == Korpus.DocumentType.FOLDER) {
@@ -138,5 +142,11 @@ class ImdexService(
         get() = file.metadata
         set(value) {
             file.metadata = value
+        }
+
+    var Korpus.Document.props: Korpus.DocumentProperties
+        get() = file.props ?: Korpus.DocumentProperties(this, emptyMap())
+        set(value) {
+            file.props = value
         }
 }
