@@ -35,6 +35,7 @@ kotlin {
     }
     sourceSets["commonMain"].dependencies {
         api("com.monkopedia:ksrpc:0.1.1")
+        api("com.monkopedia:kpages:0.0.2")
         api(project(":protocol"))
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
@@ -45,7 +46,8 @@ kotlin {
         implementation(kotlin("stdlib"))
         implementation(kotlin("reflect"))
         implementation("org.slf4j:slf4j-api:1.6.1")
-        api("com.monkopedia:lanterna-ext:0.0.1")
+        implementation(project(":markdown-lanterna"))
+        api("com.monkopedia:lanterna-ext:0.0.2")
         compileOnly("io.ktor:ktor-server-core:1.4.0")
         compileOnly("io.ktor:ktor-server-host-common:1.4.0")
         compileOnly("io.ktor:ktor-server-netty:1.4.0")

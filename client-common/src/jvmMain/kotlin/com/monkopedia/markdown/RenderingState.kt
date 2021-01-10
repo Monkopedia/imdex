@@ -16,6 +16,7 @@
 package com.monkopedia.markdown
 
 import com.googlecode.lanterna.SGR
+import com.monkopedia.lanterna.navigation.Navigation
 import com.monkopedia.lanterna.spannable.Action
 import com.monkopedia.lanterna.spannable.EnableSGRSpan
 import com.monkopedia.lanterna.spannable.LinkSpan
@@ -43,7 +44,6 @@ import java.awt.Desktop
 import java.net.URI
 
 actual typealias Spanned = com.monkopedia.lanterna.spannable.Spanned
-actual typealias Navigation = com.monkopedia.lanterna.navigation.Navigation
 actual typealias Gravity = com.monkopedia.dynamiclayout.Gravity
 
 fun createAction(linkContext: LinkContext, url: CharSequence): Action? {
@@ -87,7 +87,7 @@ class PathAction(
     private val scrollTo: String? = null
 ) : Action {
     override fun invoke(navigation: Navigation) {
-        linkContext.launchLink(navigation, path, scrollTo)
+        linkContext.launchLink(ImdexApp.INSTANCE.navigator, path, scrollTo)
     }
 }
 

@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.monkopedia.imdex.browser
+package com.monkopedia.markdown
 
 import com.monkopedia.imdex.Korpus
-import com.monkopedia.markdown.ImdexNode
-import com.monkopedia.markdown.ReactImdexRenderer
-import com.monkopedia.markdown.RenderingState
-import kotlinx.browser.window
+import com.monkopedia.kpages.LifecycleComponent
 import kotlinx.css.LinearDimension
 import kotlinx.css.height
 import kotlinx.css.padding
@@ -32,15 +29,21 @@ import react.setState
 import styled.css
 import styled.styledDiv
 
+
 external interface MarkdownProps : RProps {
-    var id: String
-    var label: String
+    var content: Korpus.Document?
+    var document: Korpus.DocumentContent?
+    var nodes: ImdexNode?
 }
+
+private val MarkdownProps.id: String
+    get() = (document?.document?.path ?: content?.path)!!
 
 external interface MarkdownState : RState {
     var id: String?
     var content: String?
     var nodes: ImdexNode?
+    var document: Korpus.Document?
 }
 
 class MarkdownScreen(props: MarkdownProps) :
@@ -48,21 +51,23 @@ class MarkdownScreen(props: MarkdownProps) :
 
     val queue = CoroutineQueue()
 
-    init {
-        globalKey("e") {
-            window.location.search =
-                if (window.location.search.isNotEmpty()) "${window.location.search}&edit=true"
-                else "edit=true"
-        }
-    }
-
     override fun componentWillUnmount() {
         queue.parent.cancel()
     }
 
-    private fun launchLoad() {
+    private fun launchLoad(props: MarkdownProps) {
         queue.run {
             if (state.id == props.id) {
+                return@run
+            }
+            if (props.document != null) {
+                val doc = props.document!!
+                val nodes = props.nodes!!
+                setState {
+                    id = doc.document.path
+                    content = doc.content
+                    this.nodes = nodes
+                }
                 return@run
             }
             val document =
@@ -70,13 +75,13 @@ class MarkdownScreen(props: MarkdownProps) :
                     Korpus.Document.ROOT,
                     props.id
                 )
-            val loadedContent = iMDexService.get().fetch(document)
-            val parsedContent = iMDexService.get().parse(document)
+            val loadedContent = ImdexApp.INSTANCE.imdex.fetch(document)
+            val parsedContent = ImdexApp.INSTANCE.imdex.parse(document)
             console.log("Fetch $document")
             console.log(parsedContent.toLongString())
             setState {
                 try {
-                    id = loadedContent.document.path.trimStart('/')
+                    id = loadedContent.document.path
                     content = loadedContent.content
                     nodes = parsedContent
                 } catch (e: Throwable) {
@@ -88,23 +93,12 @@ class MarkdownScreen(props: MarkdownProps) :
 
     override fun RBuilder.render() {
         if (state.id != props.id) {
-            launchLoad()
+            launchLoad(props)
         }
         val content = state.content
         if (content != null) {
             val renderer = ReactImdexRenderer()
-            val rstate = RenderingState(invertedTheme, content) { n, path, scrollPosition ->
-                queue.run {
-                    val document = Korpus.Document(props.id)
-                    val request = Korpus.ResolveLinkRequest(document, path, scrollPosition)
-                    val resolved = iMDexService.get().resolveLink(request)
-                    if (resolved != null) {
-                        Navigation.open(resolved.document)
-                    } else {
-                        console.error("Can't resolve $path $scrollPosition")
-                    }
-                }
-            }
+            val rstate = RenderingState(invertedTheme, content, MdContext(state.document!!))
             // styledDiv {
             //     css {
             //         overflowX = Overflow.hidden
@@ -126,7 +120,7 @@ class MarkdownScreen(props: MarkdownProps) :
                     height = LinearDimension.auto
                 }
                 h1 {
-                    +"Loading ${props.id}"
+                    +"Loading ${props.document}"
                 }
             }
         }

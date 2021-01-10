@@ -23,6 +23,7 @@ import com.monkopedia.dynamiclayout.Gravity
 import com.monkopedia.dynamiclayout.GravityLayoutParams
 import com.monkopedia.dynamiclayout.SizeSpec.Companion.specify
 import com.monkopedia.dynamiclayout.Wrap
+import com.monkopedia.lanterna.ComponentHolder
 import com.monkopedia.lanterna.Lanterna.fontLoader
 import com.monkopedia.lanterna.WindowHolder
 import com.monkopedia.lanterna.asciiLabel
@@ -41,9 +42,8 @@ class SearchStatusScreen(
     private val onComplete: suspend () -> Unit
 ) : Screen("search_status") {
     private lateinit var labelFrame: CachingPanel
-    private var scanJob: Job? = null
 
-    override fun WindowHolder.createWindow() {
+    override fun ComponentHolder.createWindow() {
         vertical {
             space(1)
             labelFrame = frame {

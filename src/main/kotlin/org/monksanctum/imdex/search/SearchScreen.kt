@@ -23,6 +23,7 @@ import com.monkopedia.dynamiclayout.Fill
 import com.monkopedia.dynamiclayout.Wrap
 import com.monkopedia.imdex.Imdex
 import com.monkopedia.info
+import com.monkopedia.lanterna.ComponentHolder
 import com.monkopedia.lanterna.EventMatcher
 import com.monkopedia.lanterna.GUI
 import com.monkopedia.lanterna.Lanterna
@@ -50,15 +51,15 @@ class SearchScreen : Screen("search") {
         }
     }
 
-    override fun WindowHolder.createWindow() {
+    override fun ComponentHolder.createWindow() {
         vertical {
             addComponent(textInput)
             textInput.layoutParams(Fill, Wrap)
             addComponent(searchResults)
             searchResults.layoutParams(Fill, Fill)
         }
-        this.window.theme = Lanterna.gui.theme
-        this.window.fullscreen = true
+        window.theme = Lanterna.gui.theme
+        window.fullscreen = true
     }
 
     private var pendingUpdate = false

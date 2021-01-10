@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.monkopedia.mdview
+package com.monkopedia.markdown
 
 import com.googlecode.lanterna.TerminalPosition
 import com.googlecode.lanterna.gui2.Component
@@ -33,6 +33,7 @@ import com.monkopedia.dynamiclayout.asDynamicLayout
 import com.monkopedia.dynamiclayout.debugLayout
 import com.monkopedia.dynamiclayout.plus
 import com.monkopedia.info
+import com.monkopedia.lanterna.ComponentHolder
 import com.monkopedia.lanterna.EventMatcher.Companion.matcher
 import com.monkopedia.lanterna.GUI
 import com.monkopedia.lanterna.Lanterna
@@ -41,51 +42,27 @@ import com.monkopedia.lanterna.SelectableContainer
 import com.monkopedia.lanterna.SelectableListener
 import com.monkopedia.lanterna.SelectionManager
 import com.monkopedia.lanterna.SharedFocus
-import com.monkopedia.lanterna.WindowHolder
 import com.monkopedia.lanterna.buildViews
 import com.monkopedia.lanterna.frame
 import com.monkopedia.lanterna.label
-import com.monkopedia.lanterna.navigation.Navigation
 import com.monkopedia.lanterna.navigation.Screen
 import com.monkopedia.lanterna.navigation.registerBackspaceAsBack
 import com.monkopedia.lanterna.navigation.registerEscapeAsBack
 import com.monkopedia.lanterna.scroll
 import com.monkopedia.lanterna.spannable.SpannableLabel
 import com.monkopedia.lanterna.vertical
-import com.monkopedia.lanterna.window
-import com.monkopedia.markdown.LinkContext
-import com.monkopedia.markdown.parseMarkdown
-import com.vladsch.flexmark.util.ast.Node
-import java.io.File
-import kotlin.reflect.KClass
+import com.monkopedia.mdview.markdown
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.reflect.KClass
 
 private const val DEBUG_LAYOUT: Boolean = false
 
-fun Navigation.loadMd(file: File, scrollTo: String? = null) {
-    val window = gui.window(centered = true) {
-        label("Loading ${file.absolutePath}")
-    }
-    gui.addWindow(window)
-    GlobalScope.launch(Dispatchers.IO) {
-        val document: Node = parseMarkdown(file)
-        withContext(Dispatchers.GUI) {
-            gui.removeWindow(window)
-        }
-        open(
-            MdScreen(document, scrollTo) { navigation, path, position ->
-                navigation.loadMd(File(file.parentFile, path), position)
-            }
-        )
-    }
-}
-
 class MdScreen(
-    private val document: Node,
+    private val document: ImdexNode,
+    private val content: String,
     private val scrollTo: String?,
     private val linkContext: LinkContext
 ) : Screen("mdscreen") {
@@ -138,7 +115,7 @@ class MdScreen(
             }
     }
 
-    override fun WindowHolder.createWindow() {
+    override fun ComponentHolder.createWindow() {
         frame = frame {
             label("Rendering...").layoutParams(Wrap, Wrap, Gravity.CENTER)
         }
@@ -151,7 +128,7 @@ class MdScreen(
                 scroll {
                     vertical {
                         layout.renderer.setFillAreaBeforeDrawingComponents(true)
-                        markdown(document, linkContext)
+                        markdown(document, content, linkContext)
                     }
                 }.layoutParams(Fill, Wrap)
             }.first() as ScrollComponent

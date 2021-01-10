@@ -18,6 +18,8 @@ package com.monkopedia.markdown
 import com.ccfraser.muirwik.components.mThemeProvider
 import com.ccfraser.muirwik.components.mTypography
 import com.ccfraser.muirwik.components.styles.Theme
+import com.monkopedia.kpages.INSTANCE
+import com.monkopedia.kpages.Navigator
 import kotlinx.browser.window
 import kotlinx.css.Color
 import kotlinx.css.backgroundColor
@@ -37,8 +39,6 @@ import react.dom.h5
 import react.dom.h6
 import styled.css
 import styled.styledCode
-
-actual typealias Navigation = Any
 
 actual data class Spanned(val element: RBuilder.() -> Unit)
 
@@ -171,5 +171,5 @@ fun pathAction(
 ): (Event) -> Unit = {
     it.stopPropagation()
     it.preventDefault()
-    linkContext.launchLink(it, path, scrollTo)
+    linkContext.launchLink(Navigator.INSTANCE, path, scrollTo)
 }

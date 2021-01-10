@@ -36,8 +36,8 @@ repositories {
 dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    api("com.monkopedia:lanterna-ext:0.0.1")
-    api(project(":markdown"))
+    api("com.monkopedia:lanterna-ext:0.0.2")
+    api("com.monkopedia:kpages:0.0.2")
     api(project(":protocol"))
 
     // Use the Kotlin JDK 8 standard library.

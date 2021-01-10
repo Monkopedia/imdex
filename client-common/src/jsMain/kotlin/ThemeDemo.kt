@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.monkopedia.imdex.browser
+package com.monkopedia.markdown
 
 import com.ccfraser.muirwik.components.MAppBarColor
 import com.ccfraser.muirwik.components.MAppBarPosition

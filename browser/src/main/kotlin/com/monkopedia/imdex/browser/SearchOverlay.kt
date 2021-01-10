@@ -18,6 +18,7 @@ package com.monkopedia.imdex.browser
 import com.ccfraser.muirwik.components.mBackdrop
 import com.monkopedia.imdex.Imdex
 import com.monkopedia.imdex.Korpus
+import com.monkopedia.markdown.CoroutineQueue
 import kotlinx.browser.window
 import kotlinx.css.LinearDimension
 import kotlinx.css.Position

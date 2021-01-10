@@ -15,6 +15,7 @@
  */
 package com.monkopedia.markdown
 
+import com.monkopedia.kpages.Navigator
 import com.monkopedia.markdown.ImdexNodeType.BLOCK_QUOTE
 import com.monkopedia.markdown.ImdexNodeType.BULLET
 import com.monkopedia.markdown.ImdexNodeType.FENCED_CODE
@@ -29,7 +30,6 @@ import com.monkopedia.markdown.ImdexNodeType.TABLE_ROW
 import com.monkopedia.markdown.ImdexNodeType.THEMATIC_BREAK
 
 expect class Spanned
-expect class Navigation
 
 expect class RenderingState {
     val content: String
@@ -38,7 +38,7 @@ expect class RenderingState {
 }
 
 fun interface LinkContext {
-    fun launchLink(navigation: Navigation, path: String, position: String?)
+    fun launchLink(navigation: Navigator, path: String, position: String?)
 }
 
 expect enum class Gravity {

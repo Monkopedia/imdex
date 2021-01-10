@@ -106,49 +106,6 @@ class SearchResults(var onSelectCallback: (Korpus.Document) -> Unit) : CachingPa
     }
 }
 
-fun Navigation.loadDocument(document: Korpus.Document) {
-    val window = Lanterna.gui.window(centered = true) {
-        label("Loading ${document.path}")
-    }
-    Lanterna.gui.addWindow(window)
-    GlobalScope.launch(Dispatchers.IO) {
-        val content = App.imdexService.fetch(document)
-        val node: Node = parseMarkdown(content.content)
-        withContext(Dispatchers.GUI) {
-            Lanterna.gui.removeWindow(window)
-        }
-        open(MdScreen(node, null, MdContext(document)))
-    }
-}
-
-class MdContext(private val document: Korpus.Document) : LinkContext {
-    override fun launchLink(
-        navigation: Navigation,
-        path: String,
-        position: String?
-    ) {
-        val window = gui.window(centered = true) {
-            label("Loading ${document.path}")
-        }
-        gui.addWindow(window)
-        GlobalScope.launch(Dispatchers.IO) {
-            val link = App.imdexService.resolveLink(
-                Korpus.ResolveLinkRequest(
-                    document,
-                    path,
-                    position
-                )
-            ) ?: return@launch errorMessage("Broken link")
-            val content = App.imdexService.fetch(link.document)
-            val document: Node = parseMarkdown(content.content)
-            withContext(Dispatchers.GUI) {
-                gui.removeWindow(window)
-            }
-            navigation.open(MdScreen(document, position, MdContext(link.document)))
-        }
-    }
-}
-
 suspend fun errorMessage(s: String) {
     val window = gui.window(centered = true) { label(s) }
     gui.addWindow(window)

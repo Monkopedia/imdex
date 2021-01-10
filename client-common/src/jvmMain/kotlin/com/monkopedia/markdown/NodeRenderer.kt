@@ -21,17 +21,10 @@ import com.monkopedia.markdown.ImdexRenderer
 import com.monkopedia.markdown.LanternaImdexRenderer
 import com.monkopedia.markdown.LinkContext
 import com.monkopedia.markdown.RenderingState
-import com.monkopedia.markdown.convert
-import com.vladsch.flexmark.util.ast.Node
 
-suspend fun WeightedPanelHolder.markdown(node: Node, file: LinkContext) {
-    var baseSequence = node.baseSequence
-    while (baseSequence.baseSequence != null && baseSequence.baseSequence != baseSequence) {
-        baseSequence = baseSequence.baseSequence
-    }
-    val node = convert(node)
+suspend fun WeightedPanelHolder.markdown(node: ImdexNode, str: String, file: LinkContext) {
     val renderer = LanternaImdexRenderer()
-    renderer.markdown(this, baseSequence.toString(), node, file)
+    renderer.markdown(this, str, node, file)
 }
 
 suspend fun <T> ImdexRenderer<T>.markdown(

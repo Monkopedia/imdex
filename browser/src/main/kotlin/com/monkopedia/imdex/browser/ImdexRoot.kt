@@ -16,7 +16,14 @@
 package com.monkopedia.imdex.browser
 
 import com.ccfraser.muirwik.components.mThemeProvider
-import com.monkopedia.kpages.preferences.PreferenceDemoScreen
+import com.monkopedia.kpages.INSTANCE
+import com.monkopedia.kpages.KPagesComponent
+import com.monkopedia.kpages.Mutable
+import com.monkopedia.kpages.Navigator
+import com.monkopedia.markdown.ImdexApp
+import com.monkopedia.markdown.theme
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.css.LinearDimension
 import kotlinx.css.Overflow
 import kotlinx.css.height
@@ -24,23 +31,28 @@ import kotlinx.css.marginTop
 import kotlinx.css.overflowY
 import kotlinx.css.px
 import kotlinx.css.vh
-import org.w3c.dom.url.URLSearchParams
 import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.div
-import react.router.dom.browserRouter
-import react.router.dom.route
-import react.router.dom.switch
 import styled.css
 import styled.styledDiv
+import kotlin.collections.set
 
 external interface RootState : RState {
     var search: String?
 }
 
 class ImdexRoot : RComponent<RProps, RootState>() {
+    lateinit var app: ImdexApp
+    val title = Mutable("Loading" as CharSequence)
+
+    init {
+        GlobalScope.launch {
+            app = ImdexApp(iMDexService.get())
+            app.navigator = Navigator.INSTANCE
+        }
+    }
     override fun RBuilder.render() {
         kotlinext.js.require("codemirror/lib/codemirror.css")
         kotlinext.js.require("codemirror/mode/gfm/gfm.js")
@@ -54,37 +66,43 @@ class ImdexRoot : RComponent<RProps, RootState>() {
                     height = 100.vh - 70.px
                     overflowY = Overflow.auto
                 }
-
-                browserRouter {
-                    switch {
-                        // route("/", SearchScreen::class, exact = true)
-                        route<RProps>("/theme_demo", exact = false) { props ->
-                            div {
-                                child(ThemeDemo::class) {
-                                }
-                            }
-                        }
-                        route("/settings", SettingsScreen::class, exact = true)
-                        route("/preference_demo", exact = true) {
-                            PreferenceDemoScreen.componentFactory(this)
-                        }
-                        route<MarkdownProps>("/", exact = false) { props ->
-                            div {
-                                val edit = URLSearchParams(props.location.search).get("edit")
-                                console.log("Get edit ${props.location.search} $edit")
-                                if (edit?.toBoolean() == true) {
-                                    child(EditScreen::class) {
-                                        attrs.id = props.location.pathname.trimStart('/')
-                                    }
-                                } else {
-                                    child(MarkdownScreen::class) {
-                                        attrs.id = props.location.pathname.trimStart('/')
-                                    }
-                                }
-                            }
-                        }
+                child(KPagesComponent::class) {
+                    attrs {
+                        this.app = this@ImdexRoot.app
+                        this.title = this@ImdexRoot.title
                     }
                 }
+
+//                browserRouter {
+//                    switch {
+//                        // route("/", SearchScreen::class, exact = true)
+//                        route<RProps>("/theme_demo", exact = false) { props ->
+//                            div {
+//                                child(ThemeDemo::class) {
+//                                }
+//                            }
+//                        }
+//                        route("/settings", SettingsScreen::class, exact = true)
+////                        route("/preference_demo", exact = true) {
+////                            PreferenceDemoScreen.componentFactory(this)
+////                        }
+//                        route<MarkdownProps>("/", exact = false) { props ->
+//                            div {
+//                                val edit = URLSearchParams(props.location.search).get("edit")
+//                                console.log("Get edit ${props.location.search} $edit")
+//                                if (edit?.toBoolean() == true) {
+//                                    child(EditScreen::class) {
+//                                        attrs.id = props.location.pathname.trimStart('/')
+//                                    }
+//                                } else {
+////                                    child(MarkdownScreen::class) {
+////                                        attrs.id = props.location.pathname.trimStart('/')
+////                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
             }
             child(SearchOverlay::class) { }
         }

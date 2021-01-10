@@ -16,6 +16,7 @@
 package com.monkopedia.imdex.browser
 
 import com.monkopedia.imdex.Korpus
+import com.monkopedia.markdown.CoroutineQueue
 import com.monkopedia.markdown.ImdexNode
 import kotlinext.js.js
 import kotlinx.css.Position

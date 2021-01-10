@@ -28,13 +28,13 @@ import com.ccfraser.muirwik.components.mTextField
 import com.ccfraser.muirwik.components.mToolbar
 import com.ccfraser.muirwik.components.mToolbarTitle
 import com.ccfraser.muirwik.components.targetInputValue
+import com.monkopedia.markdown.invertedTheme
 import kotlinx.browser.window
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.css.LinearDimension
 import kotlinx.css.flex
 import kotlinx.css.height
-import kotlinx.css.margin
 import kotlinx.css.marginRight
 import kotlinx.css.px
 import org.w3c.dom.url.URLSearchParams
