@@ -100,7 +100,7 @@ tasks.withType<KotlinCompile>().all {
     }
 }
 
-val browser = rootProject.findProject(":browser")!!
+val browser = rootProject.findProject(":client")!!
 
 val copy = tasks.register<Copy>("copyJsBundleToKtor") {
     from("${browser.buildDir}/distributions")
@@ -108,7 +108,7 @@ val copy = tasks.register<Copy>("copyJsBundleToKtor") {
 }
 
 tasks.named("copyJsBundleToKtor") {
-    mustRunAfter(browser.tasks["browserProductionWebpack"])
+    mustRunAfter(browser.tasks["jsBrowserProductionWebpack"])
 }
 
 tasks.named("fatJar") {

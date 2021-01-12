@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
@@ -23,31 +23,28 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.4.21")
+        classpath("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:1.4.21")
+        classpath("com.github.autostyle:com.github.autostyle.gradle.plugin:3.1")
     }
 }
 
-plugins {
-    // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.4.21"
-    kotlin("plugin.serialization") version "1.4.21"
-    id("com.github.autostyle") version "3.1"
-
-    // Apply the application plugin to add support for building a CLI application.
-    application
-}
-
 allprojects {
-    plugins.apply("com.github.autostyle")
-    autostyle {
-        kotlinGradle {
-            // Since kotlin doesn't pick up on multi platform projects
-            filter.include("**/*.kt")
-            ktlint("0.39.0") {
-                userData(mapOf("android" to "true"))
-            }
+    afterEvaluate {
+        if (!plugins.hasPlugin("org.jetbrains.kotlin.jvm") && !plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
+            return@afterEvaluate
+        }
+        plugins.apply("com.github.autostyle")
 
-            licenseHeader(
-                """
+        extensions.configure(com.github.autostyle.gradle.AutostyleExtension::class) {
+            kotlinGradle {
+                // Since kotlin doesn't pick up on multi platform projects
+                filter.include("**/*.kt")
+                ktlint("0.39.0") {
+                    userData(mapOf("android" to "true"))
+                }
+
+                licenseHeader(
+                    """
                 |Copyright 2020 Jason Monk
                 |
                 |Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,7 +58,8 @@ allprojects {
                 |WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
                 |See the License for the specific language governing permissions and
                 |limitations under the License.""".trimMargin()
-            )
+                )
+            }
         }
     }
 }
@@ -74,60 +72,4 @@ repositories {
     maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
     maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
     maven(url = "https://kotlinx.bintray.com/kotlinx/")
-}
-
-// configurations.create("dokka-plugins")
-
-dependencies {
-    // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(project(":markdown"))
-    implementation(project(":markdown-lanterna"))
-    implementation(project(":protocol"))
-    implementation("com.monkopedia:lanterna-ext:0.0.1")
-    implementation("com.monkopedia:ksrpc:0.1.1")
-
-    // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.21")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
-    implementation("io.ktor:ktor-client-core:1.3.2")
-    implementation("io.ktor:ktor-client-core-jvm:1.3.2")
-    implementation("io.ktor:ktor-client-apache:1.3.2")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.10.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.10.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.0")
-    implementation("io.reactivex.rxjava3:rxkotlin:3.0.0")
-
-    implementation("org.jetbrains.exposed:exposed-core:0.26.2")
-    implementation("org.jetbrains.exposed:exposed-dao:0.26.2")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.26.2")
-    implementation("org.xerial:sqlite-jdbc:3.32.3.2")
-
-    implementation("org.apache.lucene:lucene-core:6.4.1")
-
-    implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
-    implementation("com.github.ajalt:clikt:2.8.0")
-    implementation("com.googlecode.lanterna:lanterna:3.0.3")
-
-    // Use the Kotlin test library.
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-
-    // Use the Kotlin JUnit integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-}
-
-tasks.withType<KotlinCompile>().all {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += "-Xskip-prerelease-check"
-    }
-}
-
-application {
-
-// Define the main class for the application.
-    mainClassName = "org.monksanctum.imdex.AppKt"
 }

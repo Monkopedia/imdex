@@ -29,7 +29,9 @@ repositories {
 }
 
 kotlin {
-    jvm()
+    jvm {
+        withJava()
+    }
     js {
         browser {}
     }

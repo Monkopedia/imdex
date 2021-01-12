@@ -18,15 +18,14 @@ package com.monkopedia.scriptorium
 import com.monkopedia.imdex.Imdex
 import com.monkopedia.imdex.Korpus
 import com.monkopedia.ksrpc.Service
-import com.monkopedia.markdown.ImdexNode
-import com.monkopedia.markdown.cell
-import com.monkopedia.markdown.convert
-import com.monkopedia.markdown.h1
-import com.monkopedia.markdown.link
-import com.monkopedia.markdown.parseMarkdown
-import com.monkopedia.markdown.root
-import com.monkopedia.markdown.row
-import com.monkopedia.markdown.table
+import com.monkopedia.imdex.ImdexNode
+import com.monkopedia.imdex.cell
+import com.monkopedia.imdex.convert
+import com.monkopedia.imdex.link
+import com.monkopedia.imdex.parseMarkdown
+import com.monkopedia.imdex.root
+import com.monkopedia.imdex.row
+import com.monkopedia.imdex.table
 import java.io.File
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
@@ -51,12 +50,15 @@ class ImdexService(
                     val base = File(target, document.path)
                     val content = base.readText()
 
+                    val contentSection = segments.joinToString("") { (start, end) ->
+                        content.substring(start, end)
+                    }
+                    val parsed = convert(parseMarkdown(contentSection))
                     return@map Korpus.DocumentSectionContent(
                         sections,
                         metadata,
-                        segments.joinToString("") { (start, end) ->
-                            content.substring(start, end)
-                        }
+                        contentSection,
+                        parsed
                     )
                 }
             )
@@ -70,7 +72,10 @@ class ImdexService(
         }
         val linkFile = File(if (base.isDirectory) base else base.parentFile, link)
         if (linkFile.exists()) {
-            val path = linkFile.toRelativeString(target)
+            var path = linkFile.toRelativeString(target)
+            if (!path.startsWith("/")) {
+                path = "/$path"
+            }
             return Korpus.DocumentLink(Korpus.Document(path), position)
         }
 
@@ -106,9 +111,6 @@ class ImdexService(
                 if (document == Korpus.Document.ROOT) filteredKorpii()
                 else document.file.readFolder()
             return root(base) {
-                h1 {
-                    +document.name
-                }
                 table {
                     row {
                         cell {
@@ -116,11 +118,12 @@ class ImdexService(
                         }
                     }
                     splitText("\n").forEach { file ->
-                        val text = file.get()
+                        val (url, label) = file.splitText("\r")
+                        val urlText = url.get()
                         row {
                             cell {
-                                link(text) {
-                                    +file
+                                link(urlText) {
+                                    +label
                                 }
                             }
                         }
@@ -131,8 +134,21 @@ class ImdexService(
         return convert(parseMarkdown(document.file))
     }
 
+    private fun File.readFolder(): String {
+        return (listOf(
+            "." to ".",
+            ".." to ".."
+        ) + list().filter { !it.endsWith(".imdex") && !it.endsWith(".props") }.map {
+            it to File(this, it).metadata.label
+        }.sortedBy { it.second }).joinToString("\n") {
+            "${it.first}\r${it.second}"
+        }
+    }
+
     private suspend fun filteredKorpii(): String {
-        return profileManager.getKorpii(profile).joinToString("\n")
+        return profileManager.getKorpii(profile).joinToString("\n") {
+            "$it\r$it"
+        }
     }
 
     val Korpus.Document.file: File

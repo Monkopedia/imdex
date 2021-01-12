@@ -37,7 +37,7 @@ dependencies {
 }
 
 afterEvaluate {
-    autostyle {
+    extensions.configure(com.github.autostyle.gradle.AutostyleExtension::class) {
         kotlinGradle {
             // Since kotlin doesn't pick up on multi platform projects
             filter.include("**/*.kt")

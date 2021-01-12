@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.monkopedia.markdown
+package com.monkopedia.imdex
 
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -34,6 +34,11 @@ class ImdexNodeBuilder(val base: String, val node: ImdexNode) {
     }
 
     fun splitText(separator: String) = base.split(separator).map { indexed(it) }
+
+    fun IndexedText.splitText(separator: String) =
+        this@ImdexNodeBuilder.base.substring(start, end).split(separator).map {
+            this@ImdexNodeBuilder.indexed(it)
+        }
 
     fun IndexedText.get(): String {
         return this@ImdexNodeBuilder.base.substring(start, end)

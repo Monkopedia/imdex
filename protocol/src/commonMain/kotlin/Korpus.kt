@@ -93,6 +93,7 @@ interface Korpus : RpcService {
         val documentSection: DocumentSection,
         val documentType: DocumentMetadata,
         val content: String,
+        val parsed: ImdexNode?
     )
 
     @Serializable

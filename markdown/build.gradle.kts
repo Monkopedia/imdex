@@ -37,7 +37,7 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.slf4j:slf4j-api:1.6.1")
-    api(project(":client-common"))
+    api(project(":protocol"))
 
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")

@@ -21,7 +21,6 @@ import com.monkopedia.ksrpc.RpcObject
 import com.monkopedia.ksrpc.RpcService
 import com.monkopedia.ksrpc.RpcServiceChannel
 import com.monkopedia.ksrpc.map
-import com.monkopedia.markdown.ImdexNode
 import kotlinx.serialization.Serializable
 
 interface Imdex : RpcService {

@@ -84,13 +84,6 @@ class ScriptoriumService(private val config: Config) : Service(), Scriptorium {
         }
 }
 
-fun File.readFolder(): String {
-    return (listOf(
-        ".",
-        ".."
-    ) + list().filter { !it.endsWith(".imdex") && !it.endsWith(".props") }).joinToString("\n")
-}
-
 val File.metadataFile: File
     get() = File(parentFile, "$name.imdex").also {
         if (isDirectory && !it.exists()) {

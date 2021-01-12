@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.monkopedia.markdown
+package com.monkopedia.imdex
 
-import com.monkopedia.markdown.SpanType.USE_DATA
+import com.monkopedia.imdex.SpanType.USE_DATA
 import kotlinx.serialization.Serializable
 
 enum class ImdexNodeType {

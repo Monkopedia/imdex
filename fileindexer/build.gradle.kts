@@ -59,8 +59,6 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.32.3.2")
     implementation("com.zaxxer:HikariCP:3.4.2")
 
-    implementation("org.apache.lucene:lucene-core:6.4.1")
-
     implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
     implementation("com.github.ajalt:clikt:2.8.0")
     implementation("com.googlecode.lanterna:lanterna:3.0.3")
