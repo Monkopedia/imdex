@@ -10,20 +10,26 @@ import react.RProps
 import react.RState
 
 actual val themeDemoFactory: ViewControllerFactory = factory { path, title ->
-        title.value = "Theme demo"
-        child(ThemeDemo::class) {
-        }
+    title.value = "Theme demo"
+    child(ThemeDemo::class) {
     }
+}
 
 actual val rootSettingsFactory: ViewControllerFactory
     get() = factory { _, title ->
         title.value = "Settings"
-        mTypography("Coming soon") {  }
+        mTypography("Coming soon") { }
+    }
+
+actual val searchFactory: ViewControllerFactory
+    get() = factory { _, title ->
+        title.value = "Search"
+        mTypography("Coming soon") { }
     }
 
 actual val defaultFactory: ViewControllerFactory = factory { path, title ->
     val (path, scroll) = if (path.contains("?scroll=")) path.split("?scroll=")
-        else listOf(path, "")
+    else listOf(path, "")
     val data = ImdexApp.INSTANCE.cache.get(path)
     if (data != null) {
         title.value = data.content.metadata.label
@@ -45,13 +51,13 @@ actual val defaultFactory: ViewControllerFactory = factory { path, title ->
 }
 
 actual val errorFactory: ViewControllerFactory = factory { path, title ->
-        title.value = "Error"
-        child(ErrorComponent::class) {
-            attrs {
-                error = enumValueOf<Error>(path.substring("/error/".length))
-            }
+    title.value = "Error"
+    child(ErrorComponent::class) {
+        attrs {
+            error = enumValueOf<Error>(path.substring("/error/".length))
         }
     }
+}
 
 external interface ErrorProps : RProps {
     var error: Error?

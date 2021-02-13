@@ -51,7 +51,11 @@ class ImdexService(
                     val content = base.readText()
 
                     val contentSection = segments.joinToString("") { (start, end) ->
-                        content.substring(start, end)
+                        try {
+                            content.substring(start, end)
+                        } catch (t: Throwable) {
+                            ""
+                        }
                     }
                     val parsed = convert(parseMarkdown(contentSection))
                     return@map Korpus.DocumentSectionContent(

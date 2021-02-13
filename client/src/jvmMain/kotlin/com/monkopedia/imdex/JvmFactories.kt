@@ -4,6 +4,7 @@ import com.googlecode.lanterna.input.KeyType
 import com.monkopedia.dynamiclayout.Fill
 import com.monkopedia.dynamiclayout.Gravity
 import com.monkopedia.dynamiclayout.Wrap
+import com.monkopedia.imdex.search.SearchScreen
 import com.monkopedia.kpages.Mutable
 import com.monkopedia.kpages.Navigator
 import com.monkopedia.kpages.ViewControllerFactory
@@ -35,6 +36,7 @@ actual val themeDemoFactory: ViewControllerFactory = object : ViewControllerFact
         }
     }
 }
+
 actual val rootSettingsFactory: ViewControllerFactory = object : ViewControllerFactory() {
     override fun create(
         navigation: Navigator,
@@ -51,6 +53,18 @@ actual val rootSettingsFactory: ViewControllerFactory = object : ViewControllerF
         }
     }
 }
+
+actual val searchFactory: ViewControllerFactory = object : ViewControllerFactory() {
+    override fun create(
+        navigation: Navigator,
+        path: String,
+        title: Mutable<CharSequence>
+    ): Screen {
+        title.value = "Search"
+        return SearchScreen(navigation)
+    }
+}
+
 actual val defaultFactory: ViewControllerFactory = object : ViewControllerFactory() {
     override fun create(
         navigation: Navigator,
@@ -61,7 +75,7 @@ actual val defaultFactory: ViewControllerFactory = object : ViewControllerFactor
         else listOf(path, "")
         val data = ImdexApp.INSTANCE.cache.get(path, navigation)
         title.value = data.content.metadata.label
-        return MdScreen(data.nodes, data.content.content, scroll, MdContext(data.content.document))
+        return MdScreen(navigation, data.nodes, data.content.content, scroll, MdContext(data.content.document))
     }
 }
 

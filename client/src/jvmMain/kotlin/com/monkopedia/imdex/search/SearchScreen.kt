@@ -33,6 +33,7 @@ import com.monkopedia.lanterna.TextInput
 import com.monkopedia.lanterna.navigation.Screen
 import com.monkopedia.lanterna.vertical
 import com.monkopedia.imdex.App
+import com.monkopedia.imdex.loadDocument
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -40,11 +41,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class SearchScreen(private val navigator: Navigator) : Screen("com/monkopedia/imdex/search") {
+class SearchScreen(private val navigator: Navigator) : Screen("search") {
     private val searchResults = SearchResults {
-        launch {
-            navigator.push(it.path)
-        }
+        navigator.loadDocument(it)
     }
     private val textInput = TextInput().apply {
         hint = "Enter query"
@@ -59,7 +58,10 @@ class SearchScreen(private val navigator: Navigator) : Screen("com/monkopedia/im
             textInput.layoutParams(Fill, Wrap)
             addComponent(searchResults)
             searchResults.layoutParams(Fill, Fill)
-        }
+        }.layoutParams(Fill, Fill)
+    }
+
+    override suspend fun onCreate() {
         window.theme = Lanterna.gui.theme
         window.fullscreen = true
     }
@@ -87,6 +89,7 @@ class SearchScreen(private val navigator: Navigator) : Screen("com/monkopedia/im
         if (pendingUpdate) return
         pendingUpdate = true
         launch(Dispatchers.IO) {
+            Log.info("Query $latestText")
             val results = updateLock.withLock {
                 val text = latestText
                 pendingUpdate = false
@@ -96,6 +99,7 @@ class SearchScreen(private val navigator: Navigator) : Screen("com/monkopedia/im
                     }
                 }
             }
+            Log.info("Found ${results.size}")
             withContext(Dispatchers.GUI) {
                 searchResults.results = results
                 selection.selectables = listOf(textInput.asSelectable) + searchResults.selectables

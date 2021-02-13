@@ -10,11 +10,18 @@ import kotlinx.coroutines.launch
 
 expect val themeDemoFactory: ViewControllerFactory
 expect val rootSettingsFactory: ViewControllerFactory
+expect val searchFactory: ViewControllerFactory
 expect val defaultFactory: ViewControllerFactory
 expect val errorFactory: ViewControllerFactory
 
 class ImdexApp(val imdex: Imdex) : KPagesApp() {
-    lateinit var navigator: Navigator
+
+    private var navigatorImpl: Navigator? = null
+    var navigator: Navigator
+        get() = navigatorImpl!!
+        set(value) {
+            navigatorImpl = cache.wrapped(value)
+        }
     val cache: ContentCache = ContentCache()
 
     init {
@@ -26,6 +33,7 @@ class ImdexApp(val imdex: Imdex) : KPagesApp() {
         route("/theme_demo", themeDemoFactory)
         route("/settings", rootSettingsFactory)
 
+        prefixRoute("/search", searchFactory)
         prefixRoute("/loading/", defaultFactory)
         prefixRoute("/", defaultFactory)
         prefixRoute("", defaultFactory)

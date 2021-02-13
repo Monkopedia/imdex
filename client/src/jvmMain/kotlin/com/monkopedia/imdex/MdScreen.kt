@@ -33,7 +33,9 @@ import com.monkopedia.dynamiclayout.asDynamicLayout
 import com.monkopedia.dynamiclayout.debugLayout
 import com.monkopedia.dynamiclayout.plus
 import com.monkopedia.info
+import com.monkopedia.kpages.Navigator
 import com.monkopedia.lanterna.ComponentHolder
+import com.monkopedia.lanterna.ConsumeEvent
 import com.monkopedia.lanterna.EventMatcher.Companion.matcher
 import com.monkopedia.lanterna.GUI
 import com.monkopedia.lanterna.Lanterna
@@ -48,6 +50,7 @@ import com.monkopedia.lanterna.label
 import com.monkopedia.lanterna.navigation.Screen
 import com.monkopedia.lanterna.navigation.registerBackspaceAsBack
 import com.monkopedia.lanterna.navigation.registerEscapeAsBack
+import com.monkopedia.lanterna.on
 import com.monkopedia.lanterna.scroll
 import com.monkopedia.lanterna.spannable.SpannableLabel
 import com.monkopedia.lanterna.vertical
@@ -55,11 +58,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.awt.event.KeyEvent
 import kotlin.reflect.KClass
 
 private const val DEBUG_LAYOUT: Boolean = false
 
 class MdScreen(
+    private val navigator: Navigator,
     private val document: ImdexNode,
     private val content: String,
     private val scrollTo: String?,
@@ -122,6 +127,12 @@ class MdScreen(
 
     override suspend fun onCreate() {
         window.fullscreen = true
+        focusManager.keymap.create("Search") {
+            launch {
+                navigator.push("/search")
+            }
+            ConsumeEvent
+        } on 's'.matcher()
         launch(Dispatchers.IO) {
             scroll = buildViews {
                 scroll {

@@ -23,12 +23,19 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.monkopedia.FileLogger
 import com.monkopedia.Log
+import com.monkopedia.dynamiclayout.Fill
+import com.monkopedia.dynamiclayout.Wrap
 import com.monkopedia.info
+import com.monkopedia.kpages.Mutable
 import com.monkopedia.kpages.navigator
 import com.monkopedia.ksrpc.connect
 import com.monkopedia.ksrpc.toKsrpcUri
 import com.monkopedia.lanterna.Lanterna
 import com.monkopedia.lanterna.Lanterna.gui
+import com.monkopedia.lanterna.border
+import com.monkopedia.lanterna.buildViews
+import com.monkopedia.lanterna.frame
+import com.monkopedia.lanterna.label
 import com.monkopedia.lanterna.navigation.Navigation
 import com.monkopedia.lanterna.runGuiThread
 import io.ktor.client.*
@@ -54,7 +61,7 @@ object App : CliktCommand() {
         .default("http://localhost:8080/scriptorium")
     val profile by option("-p", "--profile", help = "The profile to use")
         .int()
-        .default(ProfileManager.DEFAULT_CMD)
+        .default(ProfileManager.GLOBAL)
 
     override fun run() = runBlocking {
         val config = configFile.readJson<Config>()
@@ -78,7 +85,18 @@ object App : CliktCommand() {
 
         Log.info("Indexing...")
         val app = ImdexApp(scriptoriumService.imdex(ProfileManager.GLOBAL))
-        app.navigator = app.navigator(navigation)
+        val title = Mutable("" as CharSequence)
+        app.navigator = app.navigator(navigation, title)
+        navigation.header = buildViews {
+            frame {
+                border {
+                    val label = label("")
+                    title.attach { title ->
+                        label.setText(title)
+                    }
+                }.layoutParams(Fill, Wrap)
+            }.layoutParams(Fill, Wrap)
+        }.first()
         app.navigator.loadDocument(Korpus.Document.ROOT)
         runGuiThread(true)
         Log.info("Shutting down main thread")
