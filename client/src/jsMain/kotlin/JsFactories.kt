@@ -15,12 +15,6 @@ actual val themeDemoFactory: ViewControllerFactory = factory { path, title ->
     }
 }
 
-actual val rootSettingsFactory: ViewControllerFactory
-    get() = factory { _, title ->
-        title.value = "Settings"
-        mTypography("Coming soon") { }
-    }
-
 actual val searchFactory: ViewControllerFactory
     get() = factory { _, title ->
         title.value = "Search"

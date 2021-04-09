@@ -24,6 +24,7 @@ import com.monkopedia.ksrpc.KsrpcUri
 import com.monkopedia.ksrpc.connect
 import com.monkopedia.ksrpc.deserialized
 import com.monkopedia.imdex.CoroutineQueue
+import kotlinx.browser.window
 import react.RBuilder
 import react.RComponent
 import react.RProps

@@ -21,12 +21,14 @@ import com.monkopedia.ksrpc.RpcServiceChannel
 import com.monkopedia.ksrpc.map
 import com.monkopedia.ksrpc.service
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 
 interface ProfileManager : RpcService {
 
+    @Serializable
     data class ProfileInfo(
         var id: Int,
         var label: String,
@@ -58,13 +60,14 @@ interface Profile : RpcService {
     suspend fun getLabel(u: Unit): String = map("/label", u)
     suspend fun getId(u: Unit): Int = map("/id", u)
 
+    @Serializable
     data class ProfileValue(
         var key: String,
         var value: String?
     )
 
     suspend fun get(key: String): ProfileValue = map("/get", key)
-    suspend fun set(value: ProfileValue): Unit = map("/get", value)
+    suspend fun set(value: ProfileValue): Unit = map("/set", value)
 
     private class ProfileStub(private val channel: RpcServiceChannel) :
         Profile,

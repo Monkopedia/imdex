@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 expect val themeDemoFactory: ViewControllerFactory
-expect val rootSettingsFactory: ViewControllerFactory
 expect val searchFactory: ViewControllerFactory
 expect val defaultFactory: ViewControllerFactory
 expect val errorFactory: ViewControllerFactory
@@ -32,6 +31,8 @@ class ImdexApp(val imdex: Imdex) : KPagesApp() {
         prefixRoute("/error", errorFactory)
         route("/theme_demo", themeDemoFactory)
         route("/settings", rootSettingsFactory)
+        prefixRoute("/profile/", profileSettingsFactory)
+        prefixRoute("/korpus/", korpusSettingsFactory)
 
         prefixRoute("/search", searchFactory)
         prefixRoute("/loading/", defaultFactory)

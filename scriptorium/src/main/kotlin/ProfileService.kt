@@ -22,7 +22,11 @@ import com.monkopedia.imdex.ProfileManager.Companion.DEFAULT_CMD
 import com.monkopedia.imdex.ProfileManager.Companion.DEFAULT_WEB
 import com.monkopedia.imdex.ProfileManager.Companion.GLOBAL
 import com.monkopedia.imdex.get
+import com.monkopedia.imdex.set
 import com.monkopedia.ksrpc.Service
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.util.UUID
 import kotlinx.coroutines.sync.Mutex
@@ -54,6 +58,10 @@ class ProfileManagerService(private val scriptorium: ScriptoriumService) :
                         value = defaultName
                     }
                     profiles[GLOBAL] = ProfileManager.ProfileInfo(GLOBAL, defaultName)
+                    GlobalScope.launch {
+                        delay(1)
+                        profile(GLOBAL).set(Profile.PROFILE, "Global")
+                    }
                 }
             }
         }

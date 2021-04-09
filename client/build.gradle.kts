@@ -50,7 +50,7 @@ kotlin {
     }
     sourceSets["commonMain"].dependencies {
         api("com.monkopedia:ksrpc:0.1.1")
-        api("com.monkopedia:kpages:0.0.2")
+        api("com.monkopedia:kpages:0.0.4")
         api(project(":protocol"))
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
@@ -62,7 +62,7 @@ kotlin {
         implementation(kotlin("reflect"))
         implementation("org.slf4j:slf4j-api:1.6.1")
         implementation(project(":markdown"))
-        api("com.monkopedia:lanterna-ext:0.0.2")
+        api("com.monkopedia:lanterna-ext:0.0.4")
         implementation("io.ktor:ktor-server-core:1.4.0")
         implementation("io.ktor:ktor-server-host-common:1.4.0")
         implementation("io.ktor:ktor-server-netty:1.4.0")
@@ -101,7 +101,7 @@ kotlin {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
         implementation("com.ccfraser.muirwik:muirwik-components:0.6.2")
-        implementation("com.monkopedia:kpages:0.0.1")
+        implementation("com.monkopedia:kpages:0.0.4")
         implementation(project(":protocol"))
         implementation(npm("codemirror", "5.58.3"))
         implementation(npm("showdown", "1.9.1"))

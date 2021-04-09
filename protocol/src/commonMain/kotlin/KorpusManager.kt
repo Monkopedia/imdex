@@ -64,7 +64,11 @@ interface KorpusManager : RpcService {
     data class CreateKorpus(
         val type: String,
         val config: Map<String, String>
-    )
+    ) {
+        companion object {
+            const val DEFAULT_TYPE = "imdex.korpus.default"
+        }
+    }
 
     suspend fun createType(type: KorpusType): Unit = map("/createType", type)
     suspend fun updateType(type: KorpusType): Unit = map("/updateType", type)
@@ -101,3 +105,5 @@ suspend fun KorpusManager.ensureConfig(type: KorpusType) {
         createType(type)
     }
 }
+
+inline val Scriptorium.KorpusInfo.label get() = config[Scriptorium.KorpusInfo.LABEL] ?: id

@@ -29,7 +29,11 @@ interface Scriptorium : RpcService {
         val id: String,
         val type: String,
         val config: Map<String, String>
-    )
+    ) {
+        companion object {
+            const val LABEL = "imdex.label"
+        }
+    }
 
     suspend fun korpusManager(u: Unit): KorpusManager = service("/manage", KorpusManager, u)
 
