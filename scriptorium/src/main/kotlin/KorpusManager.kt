@@ -28,11 +28,11 @@ import com.monkopedia.imdex.KorpusManager.KorpusKeyInfo
 import com.monkopedia.imdex.KorpusManager.KorpusType
 import com.monkopedia.imdex.Scriptorium.KorpusInfo
 import com.monkopedia.ksrpc.Service
-import java.io.File
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.io.File
 
 class KorpusManagerService(
     private val config: Config,
@@ -65,13 +65,17 @@ class KorpusManagerService(
     override suspend fun getKorpusTypes(u: Unit): List<KorpusType> = newSuspendedTransaction {
         KorpusTypeDao.all().map {
             it.config
-        }
+        } + DEFAULT_TYPE
     }
 
     override suspend fun getKorpusType(type: String): KorpusType? = newSuspendedTransaction {
-        KorpusTypeDao.find {
-            TypeTable.type eq type
-        }.singleOrNull()?.config
+        if (type == KorpusManager.CreateKorpus.DEFAULT_TYPE) {
+            DEFAULT_TYPE
+        } else {
+            KorpusTypeDao.find {
+                TypeTable.type eq type
+            }.singleOrNull()?.config
+        }
     }
 
     override suspend fun createKorpus(korpus: KorpusManager.CreateKorpus): String {
@@ -125,15 +129,28 @@ class KorpusManagerService(
                 }
             )
         }
-        val dao = KorpusTypeDao.find {
-            TypeTable.type eq type
-        }.singleOrNull() ?: throw IllegalArgumentException("Can't find type $type")
-        dao.config.validate(this)
+        val config = if (type == DEFAULT_TYPE.type) {
+            DEFAULT_TYPE
+        } else {
+            val dao = KorpusTypeDao.find {
+                TypeTable.type eq type
+            }.singleOrNull() ?: throw IllegalArgumentException("Can't find type $type")
+            dao.config
+        }
+        config.validate(this)
         return ret
     }
 
     val Document.file: File
         get() = File(scriptorium.target, path)
+
+    companion object {
+        val DEFAULT_TYPE = KorpusType(
+            "Default",
+            KorpusManager.CreateKorpus.DEFAULT_TYPE,
+            listOf(KorpusKeyInfo.LABEL, KorpusKeyInfo.EDITABLE)
+        )
+    }
 }
 
 fun KorpusType.validate(info: KorpusInfo) {

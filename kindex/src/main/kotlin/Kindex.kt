@@ -99,8 +99,10 @@ class KindexApp : CliktCommand() {
         const val MAVEN_URL_KEYS = "korpus.kindex.urls"
         const val ARTIFACTS_URL_KEYS = "korpus.kindex.artifacts"
         val kindexerType = KorpusType(
+            "Kindex",
             "imdex.korpus.kindex",
             listOf(
+                KorpusKeyInfo.LABEL,
                 KorpusKeyInfo(
                     "Maven URLs",
                     KorpusDataType(listOf = STRING.type),

@@ -105,8 +105,10 @@ class FileIndexerApp : CliktCommand() {
     companion object {
         const val TARGET_PATH = "folderindexer.path"
         val fileIndexerType = KorpusType(
+            "File index",
             "com.monkopedia.imdex.korpus.files",
             listOf(
+                KorpusKeyInfo.LABEL,
                 KorpusKeyInfo(
                     "Path",
                     DataType.PATH.type,

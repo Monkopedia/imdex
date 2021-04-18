@@ -21,6 +21,9 @@ import com.monkopedia.ksrpc.RpcService
 import com.monkopedia.ksrpc.RpcServiceChannel
 import com.monkopedia.ksrpc.map
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.json.Json
 
 interface KorpusManager : RpcService {
 
@@ -52,10 +55,24 @@ interface KorpusManager : RpcService {
         val displayName: String,
         val type: KorpusDataType,
         val key: String
-    )
+    ) {
+        companion object {
+            val LABEL = KorpusKeyInfo(
+                "Label",
+                DataType.STRING.type,
+                Scriptorium.KorpusInfo.LABEL
+            )
+            val EDITABLE = KorpusKeyInfo(
+                "Editable",
+                DataType.BOOLEAN.type,
+                "imdex.mutable"
+            )
+        }
+    }
 
     @Serializable
     data class KorpusType(
+        val label: String = "Generic type",
         val type: String,
         val keys: List<KorpusKeyInfo>
     )
@@ -107,3 +124,73 @@ suspend fun KorpusManager.ensureConfig(type: KorpusType) {
 }
 
 inline val Scriptorium.KorpusInfo.label get() = config[Scriptorium.KorpusInfo.LABEL] ?: id
+
+inline fun Scriptorium.KorpusInfo.boolean(key: KorpusManager.KorpusKeyInfo): Boolean {
+    require (key.type.type == KorpusManager.DataType.BOOLEAN) {
+        "$key is not a boolean"
+    }
+    return config[key.key].toBoolean()
+}
+
+inline fun Scriptorium.KorpusInfo.int(key: KorpusManager.KorpusKeyInfo): Int {
+    require (key.type.type == KorpusManager.DataType.INT) {
+        "$key is not a boolean"
+    }
+    return config[key.key]?.toIntOrNull() ?: 0
+}
+
+inline fun Scriptorium.KorpusInfo.string(key: KorpusManager.KorpusKeyInfo): String {
+    require (key.type.type == KorpusManager.DataType.STRING) {
+        "$key is not a boolean"
+    }
+    return config[key.key] ?: ""
+}
+
+inline fun Scriptorium.KorpusInfo.path(key: KorpusManager.KorpusKeyInfo): String {
+    require (key.type.type == KorpusManager.DataType.PATH) {
+        "$key is not a boolean"
+    }
+    return config[key.key] ?: ""
+}
+
+inline fun Scriptorium.KorpusInfo.artifact(key: KorpusManager.KorpusKeyInfo): String {
+    require (key.type.type == KorpusManager.DataType.ARTIFACT) {
+        "$key is not a boolean"
+    }
+    return config[key.key] ?: ""
+}
+
+inline fun Scriptorium.KorpusInfo.booleanList(key: KorpusManager.KorpusKeyInfo): List<Boolean> {
+    require (key.type.listOf?.type == KorpusManager.DataType.BOOLEAN) {
+        "$key is not a boolean"
+    }
+    return Json.decodeFromString(config[key.key] ?: "[]")
+}
+
+inline fun Scriptorium.KorpusInfo.intList(key: KorpusManager.KorpusKeyInfo): List<Int> {
+    require (key.type.listOf?.type == KorpusManager.DataType.INT) {
+        "$key is not a boolean"
+    }
+    return Json.decodeFromString(config[key.key] ?: "[]")
+}
+
+inline fun Scriptorium.KorpusInfo.stringList(key: KorpusManager.KorpusKeyInfo): List<String> {
+    require (key.type.listOf?.type == KorpusManager.DataType.STRING) {
+        "$key is not a boolean"
+    }
+    return Json.decodeFromString(config[key.key] ?: "[]")
+}
+
+inline fun Scriptorium.KorpusInfo.pathList(key: KorpusManager.KorpusKeyInfo): List<String> {
+    require (key.type.listOf?.type == KorpusManager.DataType.PATH) {
+        "$key is not a boolean"
+    }
+    return Json.decodeFromString(config[key.key] ?: "[]")
+}
+
+inline fun Scriptorium.KorpusInfo.artifactList(key: KorpusManager.KorpusKeyInfo): List<String> {
+    require (key.type.listOf?.type == KorpusManager.DataType.ARTIFACT) {
+        "$key is not a boolean"
+    }
+    return Json.decodeFromString(config[key.key] ?: "[]")
+}

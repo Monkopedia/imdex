@@ -10,6 +10,7 @@ import com.monkopedia.kpages.preferences.preference
 import com.monkopedia.kpages.preferences.preferenceCategory
 import com.monkopedia.kpages.preferences.selectionPreference
 import com.monkopedia.kpages.preferences.switchPreference
+import com.monkopedia.kpages.preferences.textInputPreference
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -154,15 +155,22 @@ class ProfileSettings(private val profileId: String) : LoadableSettings() {
     private lateinit var profile: Profile
     private lateinit var korpii: List<Scriptorium.KorpusInfo>
     private lateinit var enabledKorpii: MutableList<String>
+    private var lastLabel: String? = null
 
     override val loadedTitle: String
         get() = profileInfo.label
 
     override fun PreferenceBuilder.buildLoaded() {
         preferenceCategory("Profile settings") {
-            preference {
+            textInputPreference {
                 title = "Label"
-                subtitle = profileInfo.label
+                subtitle = lastLabel ?: profileInfo.label
+                value = lastLabel ?: profileInfo.label
+                onChange = {
+                    profile.set(Profile.PROFILE, it)
+                    lastLabel = it
+                    notifyChanged()
+                }
             }
         }
         preferenceCategory("Enable korpii") {
@@ -197,15 +205,66 @@ class ProfileSettings(private val profileId: String) : LoadableSettings() {
     }
 }
 
-class KorpusSettings(korpusId: String) : PreferenceAdapter() {
-    private var hasLoaded = false
-        set(value) {
-            field = value
-            notifyChanged()
+class KorpusSettings(private val korpusId: String) : LoadableSettings() {
+    private lateinit var korpusInfo: Scriptorium.KorpusInfo
+    private lateinit var korpusManager: KorpusManager
+    private lateinit var scriptorium: Scriptorium
+    private lateinit var type: KorpusManager.KorpusType
+    override val loadedTitle: String
+        get() = korpusInfo.label
+
+    override fun PreferenceBuilder.buildLoaded() {
+        preferenceCategory("Korpus settings") {
+            for (key in type.keys) {
+                val singleType = key.type.type
+                if (singleType != null) {
+                    when (singleType) {
+                        KorpusManager.DataType.PATH,
+                        KorpusManager.DataType.ARTIFACT,
+                        KorpusManager.DataType.INT,
+                        KorpusManager.DataType.STRING ->  {
+                            textInputPreference {
+                                title = key.displayName
+                                subtitle = korpusInfo.config[key.key]
+                                value = korpusInfo.config[key.key]
+                                title = "Change ${key.displayName}"
+                                onChange = { value ->
+                                    val newKorpusInfo = korpusInfo.copy(config = korpusInfo.config.toMutableMap().also {
+                                        it[key.key] = value
+                                    })
+                                    korpusManager.updateKorpus(KorpusManager.UpdateKorpus(newKorpusInfo.id, newKorpusInfo.config))
+                                    korpusInfo = newKorpusInfo
+                                    notifyChanged()
+                                }
+                            }
+                        }
+                        KorpusManager.DataType.BOOLEAN -> {
+                            switchPreference {
+                                title = key.displayName
+                                initialState = korpusInfo.boolean(key)
+                                onChange = { value ->
+                                    val newKorpusInfo = korpusInfo.copy(config = korpusInfo.config.toMutableMap().also {
+                                        it[key.key] = value.toString()
+                                    })
+                                    korpusManager.updateKorpus(KorpusManager.UpdateKorpus(newKorpusInfo.id, newKorpusInfo.config))
+                                    korpusInfo = newKorpusInfo
+                                    notifyChanged()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Lists unsupported for now.
+                }
+            }
         }
-    override val title: String = if (hasLoaded) "Settings" else "Loading..."
+    }
 
-    override fun PreferenceBuilder.build() {
-
+    override suspend fun load() {
+        scriptorium = getScriptorium()
+        korpusManager = scriptorium.korpusManager(Unit)
+        korpusInfo = scriptorium.getKorpii(Unit).find { it.id == korpusId }
+            ?: error("Can't find korpus $korpusId")
+        type = korpusManager.getKorpusType(korpusInfo.type) ?: error("Unrecognized type ${korpusInfo.type}")
     }
 }
