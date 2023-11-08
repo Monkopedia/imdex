@@ -23,11 +23,8 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     mavenLocal()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
-    maven(url = "https://kotlinx.bintray.com/kotlinx/")
 }
 
 val `dokka-plugins` by configurations.creating {
@@ -36,40 +33,38 @@ val `dokka-plugins` by configurations.creating {
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(project(":protocol"))
-    implementation("com.monkopedia:ksrpc:0.1.1")
+    implementation(libs.ksrpc)
     implementation(project(":markdown"))
     implementation(project(":fileindexer"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
-    implementation("io.ktor:ktor-client-core:1.3.2")
-    implementation("io.ktor:ktor-client-core-jvm:1.3.2")
-    implementation("io.ktor:ktor-client-apache:1.3.2")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.10.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.10.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.0")
-    implementation("io.reactivex.rxjava3:rxkotlin:3.0.0")
+    implementation(libs.kotlin.stdlib.jdk8)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.core.jvm)
+    implementation(libs.ktor.client.apache)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.dataformat.xml)
 
     add("dokka-plugins", project(":dokka-gfm-kindex"))
-    add("dokka-plugins", "org.jetbrains.dokka:dokka-base:1.4.10")
+    add("dokka-plugins", libs.dokka.base)
 
-    implementation("org.jetbrains.exposed:exposed-core:0.26.2")
-    implementation("org.jetbrains.exposed:exposed-dao:0.26.2")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.26.2")
-    implementation("org.xerial:sqlite-jdbc:3.32.3.2")
-    implementation("com.zaxxer:HikariCP:3.4.2")
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.sqlite.jdbc)
+    implementation(libs.hikaricp)
 
-    implementation("org.jetbrains.dokka:dokka-core:1.4.10")
+    implementation(libs.dokka.core)
 
-    implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
-    implementation("com.github.ajalt:clikt:2.8.0")
-    implementation("com.googlecode.lanterna:lanterna:3.0.3")
+    implementation(libs.flexmark.all)
+    implementation(libs.clikt)
+    implementation(libs.lanterna)
 
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
@@ -86,7 +81,7 @@ tasks.withType<KotlinCompile>().all {
 }
 
 application {
-    mainClassName = "com.monkopedia.kindex.KindexKt"
+    mainClass.set("com.monkopedia.kindex.KindexKt")
 }
 
 val deps = configurations["dokka-plugins"].map { if (it.isDirectory) it else zipTree(it) }

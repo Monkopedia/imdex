@@ -17,13 +17,11 @@
 
 buildscript {
     repositories {
-        jcenter()
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-        maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
+        mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.4.21")
-        classpath("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:1.4.21")
+        classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.9.20")
+        classpath("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:1.9.20")
         classpath("com.github.autostyle:com.github.autostyle.gradle.plugin:3.1")
     }
 }
@@ -65,11 +63,8 @@ allprojects {
 }
 
 repositories {
-    // Use jcenter for resolving dependencies.
+    // Use mavenCentral for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+    mavenCentral()
     mavenLocal()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
-    maven(url = "https://kotlinx.bintray.com/kotlinx/")
 }

@@ -21,11 +21,8 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     mavenLocal()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
-    maven(url = "https://kotlinx.bintray.com/kotlinx/")
 }
 
 kotlin {
@@ -42,28 +39,28 @@ kotlin {
         hostOs.startsWith("Windows") -> mingwX64("native")
     }
     sourceSets["commonMain"].dependencies {
-        api("com.monkopedia:ksrpc:0.1.1")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt")
+        api(libs.ksrpc)
+        implementation(libs.kotlinx.serialization.core)
+        implementation(libs.kotlinx.serialization.json)
+        implementation(libs.kotlinx.coroutines.core)
     }
     sourceSets["jvmMain"].dependencies {
         implementation(kotlin("stdlib"))
         implementation(kotlin("reflect"))
-        implementation("org.slf4j:slf4j-api:1.6.1")
-        compileOnly("io.ktor:ktor-server-core:1.4.0")
-        compileOnly("io.ktor:ktor-server-host-common:1.4.0")
-        compileOnly("io.ktor:ktor-server-netty:1.4.0")
-        compileOnly("io.ktor:ktor-client-core:1.4.0")
+        implementation(libs.slf4j.api)
+        compileOnly(libs.ktor.server.core)
+        compileOnly(libs.ktor.server.host.common)
+        compileOnly(libs.ktor.server.netty)
+        compileOnly(libs.ktor.client.core)
 
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
-        implementation("com.github.ajalt:clikt:2.8.0")
-        implementation("ch.qos.logback:logback-classic:1.2.3")
+        implementation(libs.kotlinx.serialization.core)
+        implementation(libs.kotlinx.serialization.json)
+        implementation(libs.clikt)
+        implementation(libs.logback.classic)
     }
     sourceSets["jsMain"].dependencies {
-        compileOnly("io.ktor:ktor-client-core:1.4.0")
-        compileOnly("io.ktor:ktor-client-js:1.4.0")
+        compileOnly(libs.ktor.client.core)
+        compileOnly(libs.ktor.client.js)
     }
 }
 

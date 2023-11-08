@@ -1,0 +1,91 @@
+[versions]
+logback = "1.4.11"
+muirwik = "0.10.2"
+jackson = "2.15.3"
+clikt = "3.5.1"
+lanterna = "3.1.1"
+kpages = "0.1.0"
+ksrpc = "0.8.0"
+flexmark = "0.64.8"
+hikaricp = "5.1.0"
+ktor = "2.3.6"
+lucene = "9.8.0"
+dokka = "1.9.10"
+kotlin = "1.9.20"
+exposed = "0.44.1"
+css = "1.0.0-pre.639"
+extensions = "1.0.1-pre.639"
+kotlin-react = "18.2.0-pre.639"
+kotlin-react-dom = "6.17.0-pre.639"
+kotlin-emotion = "11.11.1-pre.639"
+coroutines = "1.7.3"
+serialization = "1.6.0"
+slf4j = "2.0.9"
+sqlite = "3.43.2.2"
+
+[libraries]
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+muirwik-components = { module = "com.ccfraser.muirwik:muirwik-components", version.ref = "muirwik" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+lanterna = { module = "com.googlecode.lanterna:lanterna", version.ref = "lanterna" }
+kpages = { module = "com.monkopedia:kpages", version.ref = "kpages" }
+kpages-lanterna = { module = "com.monkopedia:lanterna-ext", version.ref = "kpages" }
+ksrpc = { module = "com.monkopedia.ksrpc:ksrpc-core", version.ref = "ksrpc" }
+flexmark-all = { module = "com.vladsch.flexmark:flexmark-all", version.ref = "flexmark" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+ktor-client-apache = { module = "io.ktor:ktor-client-apache", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-core-jvm = { module = "io.ktor:ktor-client-core-jvm", version.ref = "ktor" }
+ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
+ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor" }
+ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor" }
+ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
+dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
+dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+kotlin-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-css", version.ref = "css" }
+kotlin-extensions = { module = "org.jetbrains.kotlin-wrappers:kotlin-extensions", version.ref = "extensions" }
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-stdlib-js = { module = "org.jetbrains.kotlin:kotlin-stdlib-js", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlin-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react", version.ref = "kotlin-react" }
+kotlin-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom", version.ref = "kotlin-react" }
+kotlin-react-router-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-router-dom", version.ref = "kotlin-react-dom" }
+kotlin-emotion = { module = "org.jetbrains.kotlin-wrappers:kotlin-emotion", version.ref = "kotlin-emotion" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+
+
+[plugins]
+autostyle = { id = "com.github.autostyle", version = "3.2" }
+
+#material-ui-color-picker, 3.5.1
+#@material-ui/core, 4.12.4
+#@codemirror/commands, 6.1.1
+#@codemirror/language, 6.2.1
+#@codemirror/legacy-modes, 6.1.0
+#@codemirror/theme-one-dark, 6.1.0
+#bootstrap, ^4.4.1
+#codemirror, 6.0.1
+#crypto, 1.0.1
+#crypto-browserify, 3.12.0
+#css-loader, 3.5.2
+#file-loader, 6.2.0
+#@replit/codemirror-vim, 6.0.3
+#style-loader, 1.1.3
+#three, 0.133.1

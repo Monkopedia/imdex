@@ -24,16 +24,13 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     mavenLocal()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
-    maven(url = "https://kotlinx.bintray.com/kotlinx/")
 }
 
 dependencies {
-    implementation("org.jetbrains.dokka:dokka-base:1.4.10")
-    compileOnly("org.jetbrains.dokka:dokka-core:1.4.10")
+    implementation(libs.dokka.base)
+    compileOnly(libs.dokka.core)
 }
 
 afterEvaluate {

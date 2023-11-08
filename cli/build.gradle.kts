@@ -18,11 +18,8 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     mavenLocal()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-dev/")
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
-    maven(url = "https://kotlinx.bintray.com/kotlinx/")
 }
 
 kotlin {
@@ -48,15 +45,15 @@ kotlin {
         }
     }
     sourceSets["commonMain"].dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt")
+        implementation(libs.kotlinx.coroutines.core)
         implementation(project(":protocol"))
-        implementation("io.ktor:ktor-client-curl:1.4.1")
-        implementation("com.github.ajalt.clikt:clikt:3.0.1")
+        implementation(libs.ktor.client.curl)
+        implementation(libs.clikt)
     }
     sourceSets["nativeMain"].dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt")
+        implementation(libs.kotlinx.coroutines.core)
         implementation(project(":protocol"))
-        implementation("io.ktor:ktor-client-curl:1.4.1")
-        implementation("com.github.ajalt.clikt:clikt:3.0.1")
+        implementation(libs.ktor.client.curl)
+        implementation(libs.clikt)
     }
 }
