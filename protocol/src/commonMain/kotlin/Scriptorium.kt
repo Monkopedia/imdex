@@ -15,45 +15,42 @@
  */
 package com.monkopedia.imdex
 
-import com.monkopedia.ksrpc.RpcObject
 import com.monkopedia.ksrpc.RpcService
-import com.monkopedia.ksrpc.RpcServiceChannel
-import com.monkopedia.ksrpc.map
-import com.monkopedia.ksrpc.service
+import com.monkopedia.ksrpc.annotation.KsMethod
+import com.monkopedia.ksrpc.annotation.KsService
 import kotlinx.serialization.Serializable
 
+@Serializable
+data class KorpusInfo(
+    val id: String,
+    val type: String,
+    val config: Map<String, String>
+) {
+    companion object {
+        const val LABEL = "imdex.label"
+    }
+}
+
+enum class Platform {
+    WEB,
+    CMD
+}
+
+@KsService
 interface Scriptorium : RpcService {
 
-    @Serializable
-    data class KorpusInfo(
-        val id: String,
-        val type: String,
-        val config: Map<String, String>
-    ) {
-        companion object {
-            const val LABEL = "imdex.label"
-        }
-    }
+    @KsMethod("/manage")
+    suspend fun korpusManager(u: Unit): KorpusManager
 
-    suspend fun korpusManager(u: Unit): KorpusManager = service("/manage", KorpusManager, u)
+    @KsMethod("/profiles")
+    suspend fun profileManager(u: Unit): ProfileManager
 
-    enum class Platform {
-        WEB,
-        CMD
-    }
+    @KsMethod("/get")
+    suspend fun getKorpii(u: Unit): List<KorpusInfo>
 
-    suspend fun profileManager(u: Unit): ProfileManager =
-        service("/profiles", ProfileManager, u)
+    @KsMethod("/korpus")
+    suspend fun korpus(id: String): Korpus
 
-    suspend fun getKorpii(u: Unit): List<KorpusInfo> = map("/get", u)
-
-    suspend fun korpus(id: String): Korpus = service("/korpus", Korpus, id)
-
-    suspend fun imdex(profile: Int): Imdex = service("/imdex", Imdex, profile)
-
-    private class ScriptoriumStub(private val channel: RpcServiceChannel) :
-        Scriptorium,
-        RpcService by channel
-
-    companion object : RpcObject<Scriptorium>(Scriptorium::class, ::ScriptoriumStub)
+    @KsMethod("/imdex")
+    suspend fun imdex(profile: Int): Imdex
 }

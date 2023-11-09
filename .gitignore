@@ -2,6 +2,7 @@
 .gradle
 .idea
 local.properties
+kotlin-js-store
 
 # Ignore Gradle build output directory
 build

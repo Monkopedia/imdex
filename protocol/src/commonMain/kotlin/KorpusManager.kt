@@ -15,101 +15,102 @@
  */
 package com.monkopedia.imdex
 
-import com.monkopedia.imdex.KorpusManager.KorpusType
-import com.monkopedia.ksrpc.RpcObject
 import com.monkopedia.ksrpc.RpcService
-import com.monkopedia.ksrpc.RpcServiceChannel
-import com.monkopedia.ksrpc.map
+import com.monkopedia.ksrpc.annotation.KsMethod
+import com.monkopedia.ksrpc.annotation.KsService
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.json.Json
 
+enum class DataType {
+    PATH,
+    ARTIFACT,
+    STRING,
+    INT,
+    BOOLEAN;
+
+    val type: KorpusDataType
+        get() = KorpusDataType(this)
+}
+
+@Serializable
+data class KorpusDataType(
+    val type: DataType? = null,
+    val listOf: KorpusDataType? = null
+) {
+    init {
+        require(type != null || listOf != null) {
+            "Invalid type $type $listOf"
+        }
+    }
+}
+
+@Serializable
+data class KorpusKeyInfo(
+    val displayName: String,
+    val type: KorpusDataType,
+    val key: String
+) {
+    companion object {
+        val LABEL = KorpusKeyInfo(
+            "Label",
+            DataType.STRING.type,
+            KorpusInfo.LABEL
+        )
+        val EDITABLE = KorpusKeyInfo(
+            "Editable",
+            DataType.BOOLEAN.type,
+            "imdex.mutable"
+        )
+    }
+}
+
+@Serializable
+data class KorpusType(
+    val label: String = "Generic type",
+    val type: String,
+    val keys: List<KorpusKeyInfo>
+)
+
+@Serializable
+data class CreateKorpus(
+    val type: String,
+    val config: Map<String, String>
+) {
+    companion object {
+        const val DEFAULT_TYPE = "imdex.korpus.default"
+    }
+}
+
+@Serializable
+data class UpdateKorpus(
+    val id: String,
+    val config: Map<String, String>
+)
+
+@KsService
 interface KorpusManager : RpcService {
 
-    enum class DataType {
-        PATH,
-        ARTIFACT,
-        STRING,
-        INT,
-        BOOLEAN;
+    @KsMethod("/createType")
+    suspend fun createType(type: KorpusType)
 
-        val type: KorpusDataType
-            get() = KorpusDataType(this)
-    }
+    @KsMethod("/updateType")
+    suspend fun updateType(type: KorpusType)
 
-    @Serializable
-    data class KorpusDataType(
-        val type: DataType? = null,
-        val listOf: KorpusDataType? = null
-    ) {
-        init {
-            require(type != null || listOf != null) {
-                "Invalid type $type $listOf"
-            }
-        }
-    }
+    @KsMethod("/types")
+    suspend fun getKorpusTypes(u: Unit): List<KorpusType>
 
-    @Serializable
-    data class KorpusKeyInfo(
-        val displayName: String,
-        val type: KorpusDataType,
-        val key: String
-    ) {
-        companion object {
-            val LABEL = KorpusKeyInfo(
-                "Label",
-                DataType.STRING.type,
-                Scriptorium.KorpusInfo.LABEL
-            )
-            val EDITABLE = KorpusKeyInfo(
-                "Editable",
-                DataType.BOOLEAN.type,
-                "imdex.mutable"
-            )
-        }
-    }
+    @KsMethod("/type")
+    suspend fun getKorpusType(type: String): KorpusType?
 
-    @Serializable
-    data class KorpusType(
-        val label: String = "Generic type",
-        val type: String,
-        val keys: List<KorpusKeyInfo>
-    )
+    @KsMethod("/create")
+    suspend fun createKorpus(korpus: CreateKorpus): String
 
-    @Serializable
-    data class CreateKorpus(
-        val type: String,
-        val config: Map<String, String>
-    ) {
-        companion object {
-            const val DEFAULT_TYPE = "imdex.korpus.default"
-        }
-    }
+    @KsMethod("/update")
+    suspend fun updateKorpus(korpus: UpdateKorpus): String
 
-    suspend fun createType(type: KorpusType): Unit = map("/createType", type)
-    suspend fun updateType(type: KorpusType): Unit = map("/updateType", type)
-
-    suspend fun getKorpusTypes(u: Unit): List<KorpusType> = map("/types", u)
-
-    suspend fun getKorpusType(type: String): KorpusType? = map("/type", type)
-
-    suspend fun createKorpus(korpus: CreateKorpus): String = map("/create", korpus)
-
-    @Serializable
-    data class UpdateKorpus(
-        val id: String,
-        val config: Map<String, String>
-    )
-
-    suspend fun updateKorpus(korpus: UpdateKorpus): String = map("/update", korpus)
-
-    suspend fun deleteKorpus(id: String): String = map("/delete", id)
-
-    private class KorpusManagerStub(private val channel: RpcServiceChannel) :
-        KorpusManager, RpcService by channel
-
-    companion object : RpcObject<KorpusManager>(KorpusManager::class, ::KorpusManagerStub)
+    @KsMethod("/delete")
+    suspend fun deleteKorpus(id: String): String
 }
 
 suspend fun KorpusManager.ensureConfig(type: KorpusType) {
@@ -123,73 +124,73 @@ suspend fun KorpusManager.ensureConfig(type: KorpusType) {
     }
 }
 
-inline val Scriptorium.KorpusInfo.label get() = config[Scriptorium.KorpusInfo.LABEL] ?: id
+inline val KorpusInfo.label get() = config[KorpusInfo.LABEL] ?: id
 
-inline fun Scriptorium.KorpusInfo.boolean(key: KorpusManager.KorpusKeyInfo): Boolean {
-    require (key.type.type == KorpusManager.DataType.BOOLEAN) {
+inline fun KorpusInfo.boolean(key: KorpusKeyInfo): Boolean {
+    require(key.type.type == DataType.BOOLEAN) {
         "$key is not a boolean"
     }
     return config[key.key].toBoolean()
 }
 
-inline fun Scriptorium.KorpusInfo.int(key: KorpusManager.KorpusKeyInfo): Int {
-    require (key.type.type == KorpusManager.DataType.INT) {
+inline fun KorpusInfo.int(key: KorpusKeyInfo): Int {
+    require(key.type.type == DataType.INT) {
         "$key is not a boolean"
     }
     return config[key.key]?.toIntOrNull() ?: 0
 }
 
-inline fun Scriptorium.KorpusInfo.string(key: KorpusManager.KorpusKeyInfo): String {
-    require (key.type.type == KorpusManager.DataType.STRING) {
+inline fun KorpusInfo.string(key: KorpusKeyInfo): String {
+    require(key.type.type == DataType.STRING) {
         "$key is not a boolean"
     }
     return config[key.key] ?: ""
 }
 
-inline fun Scriptorium.KorpusInfo.path(key: KorpusManager.KorpusKeyInfo): String {
-    require (key.type.type == KorpusManager.DataType.PATH) {
+inline fun KorpusInfo.path(key: KorpusKeyInfo): String {
+    require(key.type.type == DataType.PATH) {
         "$key is not a boolean"
     }
     return config[key.key] ?: ""
 }
 
-inline fun Scriptorium.KorpusInfo.artifact(key: KorpusManager.KorpusKeyInfo): String {
-    require (key.type.type == KorpusManager.DataType.ARTIFACT) {
+inline fun KorpusInfo.artifact(key: KorpusKeyInfo): String {
+    require(key.type.type == DataType.ARTIFACT) {
         "$key is not a boolean"
     }
     return config[key.key] ?: ""
 }
 
-inline fun Scriptorium.KorpusInfo.booleanList(key: KorpusManager.KorpusKeyInfo): List<Boolean> {
-    require (key.type.listOf?.type == KorpusManager.DataType.BOOLEAN) {
+inline fun KorpusInfo.booleanList(key: KorpusKeyInfo): List<Boolean> {
+    require(key.type.listOf?.type == DataType.BOOLEAN) {
         "$key is not a boolean"
     }
     return Json.decodeFromString(config[key.key] ?: "[]")
 }
 
-inline fun Scriptorium.KorpusInfo.intList(key: KorpusManager.KorpusKeyInfo): List<Int> {
-    require (key.type.listOf?.type == KorpusManager.DataType.INT) {
+inline fun KorpusInfo.intList(key: KorpusKeyInfo): List<Int> {
+    require(key.type.listOf?.type == DataType.INT) {
         "$key is not a boolean"
     }
     return Json.decodeFromString(config[key.key] ?: "[]")
 }
 
-inline fun Scriptorium.KorpusInfo.stringList(key: KorpusManager.KorpusKeyInfo): List<String> {
-    require (key.type.listOf?.type == KorpusManager.DataType.STRING) {
+inline fun KorpusInfo.stringList(key: KorpusKeyInfo): List<String> {
+    require(key.type.listOf?.type == DataType.STRING) {
         "$key is not a boolean"
     }
     return Json.decodeFromString(config[key.key] ?: "[]")
 }
 
-inline fun Scriptorium.KorpusInfo.pathList(key: KorpusManager.KorpusKeyInfo): List<String> {
-    require (key.type.listOf?.type == KorpusManager.DataType.PATH) {
+inline fun KorpusInfo.pathList(key: KorpusKeyInfo): List<String> {
+    require(key.type.listOf?.type == DataType.PATH) {
         "$key is not a boolean"
     }
     return Json.decodeFromString(config[key.key] ?: "[]")
 }
 
-inline fun Scriptorium.KorpusInfo.artifactList(key: KorpusManager.KorpusKeyInfo): List<String> {
-    require (key.type.listOf?.type == KorpusManager.DataType.ARTIFACT) {
+inline fun KorpusInfo.artifactList(key: KorpusKeyInfo): List<String> {
+    require(key.type.listOf?.type == DataType.ARTIFACT) {
         "$key is not a boolean"
     }
     return Json.decodeFromString(config[key.key] ?: "[]")

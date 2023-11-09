@@ -15,78 +15,80 @@
  */
 package com.monkopedia.imdex
 
-import com.monkopedia.ksrpc.RpcObject
 import com.monkopedia.ksrpc.RpcService
-import com.monkopedia.ksrpc.RpcServiceChannel
-import com.monkopedia.ksrpc.map
-import com.monkopedia.ksrpc.service
+import com.monkopedia.ksrpc.annotation.KsMethod
+import com.monkopedia.ksrpc.annotation.KsService
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 
+@Serializable
+data class ProfileInfo(
+    var id: Int,
+    var label: String
+)
+
+@KsService
 interface ProfileManager : RpcService {
 
-    @Serializable
-    data class ProfileInfo(
-        var id: Int,
-        var label: String,
-    )
+    @KsMethod("/profile")
+    suspend fun profile(id: Int): Profile
 
-    suspend fun profile(id: Int): Profile = service("/profile", Profile, id)
+    @KsMethod("/info")
+    suspend fun getProfileInfo(id: Int): ProfileInfo
 
-    suspend fun getProfileInfo(id: Int): ProfileInfo = map("/info", id)
-    suspend fun getProfiles(u: Unit): List<ProfileInfo> = map("/infos", u)
+    @KsMethod("/infos")
+    suspend fun getProfiles(u: Unit): List<ProfileInfo>
 
-    suspend fun createProfile(label: String): ProfileInfo = map("/create", label)
+    @KsMethod("/create")
+    suspend fun createProfile(label: String): ProfileInfo
 
-    suspend fun setWebDefault(id: Int): Unit = map("/web_default", id)
-    suspend fun setCmdDefault(id: Int): Unit = map("/web_default", id)
+    @KsMethod("/web_default")
+    suspend fun setWebDefault(id: Int)
 
-    private class ProfileStub(private val channel: RpcServiceChannel) :
-        ProfileManager,
-        RpcService by channel
-
-    companion object : RpcObject<ProfileManager>(ProfileManager::class, ::ProfileStub) {
-        const val GLOBAL = 0
-        const val DEFAULT_WEB = -1
-        const val DEFAULT_CMD = -2
-    }
+    @KsMethod("/cmd_default")
+    suspend fun setCmdDefault(id: Int)
 }
 
+const val GLOBAL = 0
+const val DEFAULT_WEB = -1
+const val DEFAULT_CMD = -2
+
+@Serializable
+data class ProfileValue(
+    var key: String,
+    var value: String?
+)
+
+@KsService
 interface Profile : RpcService {
 
-    suspend fun getLabel(u: Unit): String = map("/label", u)
-    suspend fun getId(u: Unit): Int = map("/id", u)
+    @KsMethod("/label")
+    suspend fun getLabel(u: Unit): String
 
-    @Serializable
-    data class ProfileValue(
-        var key: String,
-        var value: String?
-    )
+    @KsMethod("/id")
+    suspend fun getId(u: Unit): Int
 
-    suspend fun get(key: String): ProfileValue = map("/get", key)
-    suspend fun set(value: ProfileValue): Unit = map("/set", value)
+    @KsMethod("/get")
+    suspend fun get(key: String): ProfileValue
 
-    private class ProfileStub(private val channel: RpcServiceChannel) :
-        Profile,
-        RpcService by channel
-
-    companion object : RpcObject<Profile>(Profile::class, ::ProfileStub) {
-        val PROFILE =
-            StringKey("profile_name").withDefault("New Profile")
-        val ENABLED_KORPII =
-            ListSerializer(String.serializer()).configKey("korpii").withDefault(emptyList())
-    }
+    @KsMethod("/set")
+    suspend fun set(value: ProfileValue): Unit
 }
+
+val PROFILE =
+    StringKey("profile_name").withDefault("New Profile")
+val ENABLED_KORPII =
+    ListSerializer(String.serializer()).configKey("korpii").withDefault(emptyList())
 
 suspend fun <T> Profile.get(key: TypedKey<T>): T {
     return key.toValue(get(key.key).value)
 }
 
 suspend fun <T> Profile.set(key: TypedKey<T>, value: T) {
-    set(Profile.ProfileValue(key.key, key.fromValue(value)))
+    set(ProfileValue(key.key, key.fromValue(value)))
 }
 
 sealed class TypedKey<T>(val key: String) {
@@ -100,18 +102,21 @@ class DefaultKey<T>(val baseKey: TypedKey<T?>, val default: T) : TypedKey<T>(bas
     override fun fromValue(v: T): String? = baseKey.fromValue(v)
     override fun toValue(v: String?): T = v?.let { baseKey.toValue(it) } ?: default
 }
+
 fun stringKey(key: String) = StringKey(key)
 
 class StringKey(key: String) : TypedKey<String?>(key) {
     override fun fromValue(v: String?): String? = v
     override fun toValue(v: String?): String? = v
 }
+
 fun booleanKey(key: String) = BooleanKey(key)
 
 class BooleanKey(key: String) : TypedKey<Boolean?>(key) {
     override fun fromValue(v: Boolean?): String? = v?.toString()
     override fun toValue(v: String?): Boolean? = v?.let { it.toBoolean() }
 }
+
 fun intKey(key: String) = IntKey(key)
 
 class IntKey(key: String) : TypedKey<Int?>(key) {

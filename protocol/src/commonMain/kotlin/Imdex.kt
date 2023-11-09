@@ -15,39 +15,40 @@
  */
 package com.monkopedia.imdex
 
-import com.monkopedia.imdex.Korpus.Document
-import com.monkopedia.imdex.Korpus.DocumentMetadata
-import com.monkopedia.ksrpc.RpcObject
 import com.monkopedia.ksrpc.RpcService
-import com.monkopedia.ksrpc.RpcServiceChannel
-import com.monkopedia.ksrpc.map
+import com.monkopedia.ksrpc.annotation.KsMethod
+import com.monkopedia.ksrpc.annotation.KsService
 import kotlinx.serialization.Serializable
 
+@Serializable
+data class Query(
+    val query: String,
+    val maxResults: Int = 10
+)
+
+@Serializable
+data class QueryResponse(
+    val results: List<DocumentSectionContent>
+)
+
+@KsService
 interface Imdex : RpcService {
 
-    @Serializable
-    data class Query(
-        val query: String,
-        val maxResults: Int = 10
-    )
+    @KsMethod("/query")
+    suspend fun query(query: Query): QueryResponse
 
-    @Serializable
-    data class QueryResponse(
-        val results: List<Korpus.DocumentSectionContent>
-    )
+    @KsMethod("/resolve")
+    suspend fun resolveLink(linkRequest: ResolveLinkRequest): DocumentLink?
 
-    suspend fun query(query: Query): QueryResponse = map("/query", query)
+    @KsMethod("/metadata")
+    suspend fun metadata(document: Document): DocumentMetadata
 
-    suspend fun resolveLink(linkRequest: Korpus.ResolveLinkRequest): Korpus.DocumentLink? =
-        map("/resolve", linkRequest)
+    @KsMethod("/fetch")
+    suspend fun fetch(document: Document): DocumentContent
 
-    suspend fun metadata(document: Document): DocumentMetadata = map("/metadata", document)
+    @KsMethod("/properties")
+    suspend fun properties(document: Document): DocumentProperties
 
-    suspend fun fetch(document: Document): Korpus.DocumentContent = map("/fetch", document)
-    suspend fun properties(document: Document): Korpus.DocumentProperties = map("/properties", document)
-
-    suspend fun parse(document: Document): ImdexNode = map("/parse", document)
-
-    private class ImdexStub(private val channel: RpcServiceChannel) : Imdex, RpcService by channel
-    companion object : RpcObject<Imdex>(Imdex::class, ::ImdexStub)
+    @KsMethod("/parse")
+    suspend fun parse(document: Document): ImdexNode
 }
