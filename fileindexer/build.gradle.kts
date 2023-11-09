@@ -33,6 +33,9 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(project(":protocol"))
     implementation(libs.ksrpc)
+    implementation(libs.ksrpc.sockets)
+    implementation(libs.ksrpc.ktor.client)
+    implementation(libs.ksrpc.ktor.websocket.client)
     implementation(project(":markdown"))
 
     // Use the Kotlin JDK 8 standard library.
@@ -67,7 +70,6 @@ dependencies {
 
 tasks.withType<KotlinCompile>().all {
     kotlinOptions {
-        jvmTarget = "1.8"
         freeCompilerArgs += "-Xskip-prerelease-check"
     }
 }

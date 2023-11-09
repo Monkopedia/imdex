@@ -35,6 +35,9 @@ lanterna = { module = "com.googlecode.lanterna:lanterna", version.ref = "lantern
 kpages = { module = "com.monkopedia:kpages", version.ref = "kpages" }
 kpages-lanterna = { module = "com.monkopedia:lanterna-ext", version.ref = "kpages" }
 ksrpc = { module = "com.monkopedia.ksrpc:ksrpc-core", version.ref = "ksrpc" }
+ksrpc-sockets = { module = "com.monkopedia.ksrpc:ksrpc-sockets", version.ref = "ksrpc" }
+ksrpc-ktor-client = { module = "com.monkopedia.ksrpc:ksrpc-ktor-client", version.ref = "ksrpc" }
+ksrpc-ktor-websocket-client = { module = "com.monkopedia.ksrpc:ksrpc-ktor-websocket-client", version.ref = "ksrpc" }
 ksrpc-server = { module = "com.monkopedia.ksrpc:ksrpc-server", version.ref = "ksrpc" }
 flexmark-all = { module = "com.vladsch.flexmark:flexmark-all", version.ref = "flexmark" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }

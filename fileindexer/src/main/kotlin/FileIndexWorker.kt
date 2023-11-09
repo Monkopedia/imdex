@@ -16,15 +16,14 @@
 package com.monkopedia.scriptorium
 
 import MdFileDao
+import com.monkopedia.imdex.Document
+import com.monkopedia.imdex.DocumentContent
+import com.monkopedia.imdex.DocumentMetadata
+import com.monkopedia.imdex.DocumentType.MARKDOWN
 import com.monkopedia.imdex.Korpus
-import com.monkopedia.imdex.Korpus.Document
-import com.monkopedia.imdex.Korpus.DocumentContent
-import com.monkopedia.imdex.Korpus.DocumentMetadata
-import com.monkopedia.imdex.Korpus.DocumentType.MARKDOWN
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.Executors
-import javax.xml.bind.DatatypeConverter
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -195,5 +194,7 @@ fun File.md5sum(): String {
     val bytes = MessageDigest
         .getInstance("MD5")
         .digest(readBytes())
-    return DatatypeConverter.printHexBinary(bytes).toUpperCase()
+    return bytes.toHex()
 }
+
+fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

@@ -22,22 +22,31 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.monkopedia.FileLogger
 import com.monkopedia.Log
 import com.monkopedia.StdoutLogger
-import com.monkopedia.imdex.Korpus
-import com.monkopedia.imdex.KorpusManager.DataType
-import com.monkopedia.imdex.KorpusManager.KorpusKeyInfo
-import com.monkopedia.imdex.KorpusManager.KorpusType
+import com.monkopedia.imdex.DATA_PATH_KEY
+import com.monkopedia.imdex.DataType.PATH
+import com.monkopedia.imdex.KorpusInfo
+import com.monkopedia.imdex.KorpusKeyInfo
+import com.monkopedia.imdex.KorpusKeyInfo.Companion.LABEL
+import com.monkopedia.imdex.KorpusType
 import com.monkopedia.imdex.Scriptorium
-import com.monkopedia.imdex.Scriptorium.KorpusInfo
 import com.monkopedia.imdex.ensureConfig
-import com.monkopedia.ksrpc.connect
-import com.monkopedia.ksrpc.deserialized
-import com.monkopedia.ksrpc.toKsrpcUri
+import com.monkopedia.ksrpc.channels.ChannelClient
+import com.monkopedia.ksrpc.ksrpcEnvironment
+import com.monkopedia.ksrpc.ktor.asConnection
+import com.monkopedia.ksrpc.ktor.websocket.asWebsocketConnection
+import com.monkopedia.ksrpc.sockets.asConnection
+import com.monkopedia.ksrpc.toStub
 import com.monkopedia.scriptorium.FileIndexWorker
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.WebSockets
 import java.io.File
+import java.net.Socket
 import java.sql.Connection
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -58,7 +67,7 @@ class FileIndexerApp : CliktCommand() {
             Log.init(FileLogger(File(log)))
         }
         runBlocking {
-            val imdex = Scriptorium.wrap(imdexPath.toKsrpcUri().connect().deserialized())
+            val imdex = imdexPath.asConnection().defaultChannel().toStub<Scriptorium, String>()
             imdex.korpusManager(Unit).ensureConfig(fileIndexerType)
             val configs = imdex.getKorpii(Unit).filter {
                 it.type == fileIndexerType.type
@@ -66,9 +75,7 @@ class FileIndexerApp : CliktCommand() {
             for (c in configs) {
                 println("Running indexing on ${c.id}")
                 val korpus = imdex.korpus(c.id)
-                val target = c.config[TARGET_PATH] ?: continue.also {
-                    println("Warning no target")
-                }
+                val target = c.config[TARGET_PATH] ?: continue
                 val targetFile = File(target)
                 if (!targetFile.exists()) {
                     println("$targetFile doesn't exist")
@@ -82,7 +89,7 @@ class FileIndexerApp : CliktCommand() {
     }
 
     private fun dbFor(config: KorpusInfo): Database {
-        val db = File(File(config.config[Korpus.DATA_PATH_KEY]), "state.db")
+        val db = File(File(config.config[DATA_PATH_KEY]), "state.db")
         if (!db.exists()) {
             db.parentFile.mkdirs()
         }
@@ -108,13 +115,36 @@ class FileIndexerApp : CliktCommand() {
             "File index",
             "com.monkopedia.imdex.korpus.files",
             listOf(
-                KorpusKeyInfo.LABEL,
+                LABEL,
                 KorpusKeyInfo(
                     "Path",
-                    DataType.PATH.type,
-                    TARGET_PATH
-                )
+                    PATH.type,
+                    TARGET_PATH,
+                ),
             ),
         )
+    }
+}
+
+private suspend fun String.asConnection(): ChannelClient<String> = withContext(Dispatchers.IO) {
+    val ksrpcEnv = ksrpcEnvironment { }
+    return@withContext when {
+        startsWith("ksrpc://") -> {
+            val (host, port) = substring("ksrpc://".length).split(":")
+            val socket = Socket(host, port.toInt())
+            (socket.getInputStream() to socket.getOutputStream()).asConnection(ksrpcEnv)
+        }
+
+        startsWith("http://") || startsWith("https://") -> {
+            HttpClient {}.asConnection(this@asConnection, ksrpcEnv)
+        }
+
+        startsWith("ws://") -> {
+            HttpClient {
+                install(WebSockets)
+            }.asWebsocketConnection(this@asConnection, ksrpcEnv)
+        }
+
+        else -> error("Unsupported connection format $this")
     }
 }
