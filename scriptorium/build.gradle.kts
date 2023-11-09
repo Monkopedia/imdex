@@ -32,6 +32,7 @@ repositories {
 dependencies {
     implementation(project(":protocol"))
     implementation(libs.ksrpc)
+    implementation(libs.ksrpc.server)
     implementation(project(":markdown"))
 
     // Use the Kotlin JDK 8 standard library.
@@ -41,6 +42,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.core.jvm)
+    implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.client.apache)
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
@@ -69,7 +71,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
-
 application {
 
 // Define the main class for the application.
@@ -77,7 +78,7 @@ application {
 }
 
 val fatJar = task("fatJar", type = Jar::class) {
-    //baseName = "${project.name}-fat"
+    // baseName = "${project.name}-fat"
     manifest {
         attributes["Implementation-Title"] = "iMDex Server"
         attributes["Implementation-Version"] = "1.0"
@@ -89,7 +90,6 @@ val fatJar = task("fatJar", type = Jar::class) {
 
 tasks.withType<KotlinCompile>().all {
     kotlinOptions {
-        jvmTarget = "1.8"
         freeCompilerArgs += "-Xskip-prerelease-check"
     }
 }
@@ -108,7 +108,6 @@ tasks.named("copyJsBundleToKtor") {
 tasks.named("fatJar") {
     mustRunAfter("copyJsBundleToKtor")
 }
-
 
 sourceSets {
     main {

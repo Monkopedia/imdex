@@ -47,23 +47,23 @@ class LuceneSearcher(private val profileManager: ProfileManagerService, private 
                 for (word in words) {
                     it.add(
                         TermQuery(Term(DocumentFields.TEXT_FIELD, word)),
-                        BooleanClause.Occur.SHOULD
+                        BooleanClause.Occur.SHOULD,
                     )
                 }
                 it.add(
                     PrefixQuery(Term(DocumentFields.TEXT_FIELD, last)),
-                    BooleanClause.Occur.SHOULD
+                    BooleanClause.Occur.SHOULD,
                 )
                 it.add(
                     BooleanQuery.Builder().also { korpusReq ->
                         for (korpus in profileManager.getKorpii(profile)) {
                             korpusReq.add(
                                 PrefixQuery(Term(DocumentFields.KORPUS_ID_FIELD, korpus)),
-                                BooleanClause.Occur.SHOULD
+                                BooleanClause.Occur.SHOULD,
                             )
                         }
                     }.build(),
-                    BooleanClause.Occur.MUST
+                    BooleanClause.Occur.MUST,
                 )
             }.build()
             val documents = executeQuery(index, query, maxResults)

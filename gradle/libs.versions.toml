@@ -35,6 +35,7 @@ lanterna = { module = "com.googlecode.lanterna:lanterna", version.ref = "lantern
 kpages = { module = "com.monkopedia:kpages", version.ref = "kpages" }
 kpages-lanterna = { module = "com.monkopedia:lanterna-ext", version.ref = "kpages" }
 ksrpc = { module = "com.monkopedia.ksrpc:ksrpc-core", version.ref = "ksrpc" }
+ksrpc-server = { module = "com.monkopedia.ksrpc:ksrpc-server", version.ref = "ksrpc" }
 flexmark-all = { module = "com.vladsch.flexmark:flexmark-all", version.ref = "flexmark" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 ktor-client-apache = { module = "io.ktor:ktor-client-apache", version.ref = "ktor" }
@@ -48,6 +49,7 @@ ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
 lucene-core = { module = "org.apache.lucene:lucene-core", version.ref = "lucene" }
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
 dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }

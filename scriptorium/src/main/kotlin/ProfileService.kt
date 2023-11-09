@@ -15,20 +15,23 @@
  */
 package com.monkopedia.scriptorium
 
+import com.monkopedia.imdex.DEFAULT_CMD
+import com.monkopedia.imdex.DEFAULT_WEB
+import com.monkopedia.imdex.ENABLED_KORPII
+import com.monkopedia.imdex.GLOBAL
 import com.monkopedia.imdex.IntKey
+import com.monkopedia.imdex.PROFILE
 import com.monkopedia.imdex.Profile
+import com.monkopedia.imdex.ProfileInfo
 import com.monkopedia.imdex.ProfileManager
-import com.monkopedia.imdex.ProfileManager.Companion.DEFAULT_CMD
-import com.monkopedia.imdex.ProfileManager.Companion.DEFAULT_WEB
-import com.monkopedia.imdex.ProfileManager.Companion.GLOBAL
+import com.monkopedia.imdex.ProfileValue
 import com.monkopedia.imdex.get
 import com.monkopedia.imdex.set
-import com.monkopedia.ksrpc.Service
+import java.lang.ref.WeakReference
+import java.util.UUID
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
-import java.util.UUID
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.exposed.sql.and
@@ -37,30 +40,28 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 private const val defaultName = "New Profile"
 
-class ProfileManagerService(private val scriptorium: ScriptoriumService) :
-    Service(), ProfileManager {
+class ProfileManagerService(private val scriptorium: ScriptoriumService) : ProfileManager {
     private val profileLock = Mutex()
     private val profileCache = mutableMapOf<Int, WeakReference<Profile>>()
     private val profiles by lazy {
-        mutableMapOf<Int, ProfileManager.ProfileInfo>().also { profiles ->
+        mutableMapOf<Int, ProfileInfo>().also { profiles ->
             transaction {
 
                 ConfigDao.find {
-                    ConfigTable.key eq Profile.PROFILE.key
+                    ConfigTable.key eq PROFILE.key
                 }.forEach {
-                    profiles[it.profile] =
-                        ProfileManager.ProfileInfo(it.profile, it.value ?: defaultName)
+                    profiles[it.profile] = ProfileInfo(it.profile, it.value ?: defaultName)
                 }
                 if (profiles.isEmpty()) {
                     ConfigDao.new {
                         profile = GLOBAL
-                        key = Profile.PROFILE.key
+                        key = PROFILE.key
                         value = defaultName
                     }
-                    profiles[GLOBAL] = ProfileManager.ProfileInfo(GLOBAL, defaultName)
+                    profiles[GLOBAL] = ProfileInfo(GLOBAL, defaultName)
                     GlobalScope.launch {
                         delay(1)
-                        profile(GLOBAL).set(Profile.PROFILE, "Global")
+                        profile(GLOBAL).set(PROFILE, "Global")
                     }
                 }
             }
@@ -81,28 +82,28 @@ class ProfileManagerService(private val scriptorium: ScriptoriumService) :
         }
     }
 
-    override suspend fun getProfileInfo(id: Int): ProfileManager.ProfileInfo {
+    override suspend fun getProfileInfo(id: Int): ProfileInfo {
         val id = resolve(id)
         return profiles[id] ?: throw IllegalArgumentException("Profile $id does not exist")
     }
 
-    override suspend fun getProfiles(u: Unit): List<ProfileManager.ProfileInfo> =
+    override suspend fun getProfiles(u: Unit): List<ProfileInfo> =
         profileLock.withLock {
             return profiles.values.toList()
         }
 
-    override suspend fun createProfile(label: String): ProfileManager.ProfileInfo =
+    override suspend fun createProfile(label: String): ProfileInfo =
         profileLock.withLock {
             val maxId = profiles.keys.maxOrNull() ?: 0
             val newId = maxId + 1
             transaction {
                 ConfigDao.new {
                     profile = newId
-                    key = Profile.PROFILE.key
+                    key = PROFILE.key
                     value = label
                 }
             }
-            return ProfileManager.ProfileInfo(newId, label).also {
+            return ProfileInfo(newId, label).also {
                 profiles[newId] = it
             }
         }
@@ -131,12 +132,12 @@ class ProfileManagerService(private val scriptorium: ScriptoriumService) :
         if (profile == GLOBAL) {
             return scriptorium.getKorpii(Unit).map { it.id }
         }
-        return profile(profile).get(Profile.ENABLED_KORPII)
+        return profile(profile).get(ENABLED_KORPII)
     }
 
-    internal suspend fun notifyNameChange(profile: Int, value: Profile.ProfileValue) =
+    internal suspend fun notifyNameChange(profile: Int, value: ProfileValue) =
         profileLock.withLock {
-            profiles[profile] = ProfileManager.ProfileInfo(profile, value.value ?: defaultName)
+            profiles[profile] = ProfileInfo(profile, value.value ?: defaultName)
         }
 
     var Int.redirect: Int?
@@ -167,8 +168,10 @@ class ProfileManagerService(private val scriptorium: ScriptoriumService) :
     }
 }
 
-class ProfileService(private val parent: ProfileManagerService, private val profile: Int) :
-    Service(), Profile {
+class ProfileService(
+    private val parent: ProfileManagerService,
+    private val profile: Int,
+) : Profile {
     private val lock = Mutex()
 
     private val data by lazy {
@@ -188,17 +191,17 @@ class ProfileService(private val parent: ProfileManagerService, private val prof
     }
 
     override suspend fun getLabel(u: Unit): String {
-        return get(Profile.PROFILE)
+        return get(PROFILE)
     }
 
-    override suspend fun get(key: String): Profile.ProfileValue {
-        return Profile.ProfileValue(key, data[key]?.second)
+    override suspend fun get(key: String): ProfileValue {
+        return ProfileValue(key, data[key]?.second)
     }
 
-    override suspend fun set(value: Profile.ProfileValue): Unit = lock.withLock {
+    override suspend fun set(value: ProfileValue): Unit = lock.withLock {
         val d = data[value.key]
         if (value.value != d?.second) {
-            if (value.key == Profile.ENABLED_KORPII.key && profile == GLOBAL) {
+            if (value.key == ENABLED_KORPII.key && profile == GLOBAL) {
                 throw IllegalArgumentException("Cannot modify global korpii")
             }
             val id = newSuspendedTransaction {
@@ -217,7 +220,7 @@ class ProfileService(private val parent: ProfileManagerService, private val prof
                 }
             }
             data[value.key] = Pair(id, value.value)
-            if (value.key == Profile.PROFILE.key) {
+            if (value.key == PROFILE.key) {
                 parent.notifyNameChange(profile, value)
             }
         }

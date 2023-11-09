@@ -17,25 +17,22 @@ package com.monkopedia.scriptorium
 
 import com.monkopedia.Log
 import com.monkopedia.debug
+import com.monkopedia.imdex.Document
+import com.monkopedia.imdex.DocumentContent
+import com.monkopedia.imdex.DocumentMetadata
+import com.monkopedia.imdex.DocumentProperties
+import com.monkopedia.imdex.DocumentType.FOLDER
+import com.monkopedia.imdex.DocumentType.MARKDOWN
 import com.monkopedia.imdex.Korpus
-import com.monkopedia.imdex.Korpus.Document
-import com.monkopedia.imdex.Korpus.DocumentContent
-import com.monkopedia.imdex.Korpus.DocumentMetadata
-import com.monkopedia.imdex.Korpus.DocumentProperties
-import com.monkopedia.imdex.Korpus.DocumentType.FOLDER
-import com.monkopedia.imdex.Korpus.DocumentType.MARKDOWN
-import com.monkopedia.imdex.Scriptorium.KorpusInfo
-import com.monkopedia.ksrpc.Service
+import com.monkopedia.imdex.KorpusInfo
 import com.monkopedia.scriptorium.IndexType.CREATE
 import com.monkopedia.scriptorium.IndexType.DELETE
 import com.monkopedia.scriptorium.IndexType.UPDATE
 import com.monkopedia.warn
 import java.io.File
 import java.security.MessageDigest
-import javax.xml.bind.DatatypeConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -47,7 +44,7 @@ enum class IndexType {
     DELETE
 }
 
-class KorpusService(private val config: Config, private val k: KorpusInfo) : Service(), Korpus {
+class KorpusService(private val config: Config, private val k: KorpusInfo) : Korpus {
     val target = File(config.homeFile, "content")
     val pendingLock = Mutex()
     val pendingChanges = mutableListOf<Pair<DocumentContent, IndexType>>()
@@ -132,8 +129,11 @@ class KorpusService(private val config: Config, private val k: KorpusInfo) : Ser
             properties.document.props = properties
         }
         pendingLock.withLock {
-            pendingChanges.add(DocumentContent(
-                properties.document, metadata, properties.document.content) to UPDATE)
+            pendingChanges.add(
+                DocumentContent(
+                    properties.document, metadata, properties.document.content
+                ) to UPDATE
+            )
         }
         return metadata
     }
@@ -227,8 +227,8 @@ class KorpusService(private val config: Config, private val k: KorpusInfo) : Ser
             file.metadata = value
         }
 
-    var Document.props: Korpus.DocumentProperties
-        get() = file.props ?: Korpus.DocumentProperties(this, emptyMap())
+    var Document.props: DocumentProperties
+        get() = file.props ?: DocumentProperties(this, emptyMap())
         set(value) {
             file.props = value
         }
@@ -238,5 +238,7 @@ fun ByteArray.md5sum(): String {
     val bytes = MessageDigest
         .getInstance("MD5")
         .digest(this)
-    return DatatypeConverter.printHexBinary(bytes).toUpperCase()
+    return bytes.toHex()
 }
+
+fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

@@ -15,10 +15,18 @@
  */
 package com.monkopedia.scriptorium
 
+import com.monkopedia.imdex.Document
+import com.monkopedia.imdex.DocumentContent
+import com.monkopedia.imdex.DocumentLink
+import com.monkopedia.imdex.DocumentMetadata
+import com.monkopedia.imdex.DocumentProperties
+import com.monkopedia.imdex.DocumentSectionContent
+import com.monkopedia.imdex.DocumentType
 import com.monkopedia.imdex.Imdex
-import com.monkopedia.imdex.Korpus
-import com.monkopedia.ksrpc.Service
 import com.monkopedia.imdex.ImdexNode
+import com.monkopedia.imdex.Query
+import com.monkopedia.imdex.QueryResponse
+import com.monkopedia.imdex.ResolveLinkRequest
 import com.monkopedia.imdex.cell
 import com.monkopedia.imdex.convert
 import com.monkopedia.imdex.link
@@ -33,13 +41,13 @@ class ImdexService(
     private val config: Config,
     private val profileManager: ProfileManagerService,
     private val profile: Int
-) : Service(), Imdex {
+) : Imdex {
 
     val target = File(config.homeFile, "content")
 
-    override suspend fun query(query: Imdex.Query): Imdex.QueryResponse =
+    override suspend fun query(query: Query): QueryResponse =
         newSuspendedTransaction(db = StateDatabase.database) {
-            return@newSuspendedTransaction Imdex.QueryResponse(
+            return@newSuspendedTransaction QueryResponse(
                 LuceneSearcher(profileManager, profile).findByText(
                     config,
                     query.query,
@@ -58,7 +66,7 @@ class ImdexService(
                         }
                     }
                     val parsed = convert(parseMarkdown(contentSection))
-                    return@map Korpus.DocumentSectionContent(
+                    return@map DocumentSectionContent(
                         sections,
                         metadata,
                         contentSection,
@@ -68,7 +76,7 @@ class ImdexService(
             )
         }
 
-    override suspend fun resolveLink(linkRequest: Korpus.ResolveLinkRequest): Korpus.DocumentLink? {
+    override suspend fun resolveLink(linkRequest: ResolveLinkRequest): DocumentLink? {
         val (document, link, position) = linkRequest
         val base = File(target, document.path)
         if (!base.exists()) {
@@ -80,39 +88,39 @@ class ImdexService(
             if (!path.startsWith("/")) {
                 path = "/$path"
             }
-            return Korpus.DocumentLink(Korpus.Document(path), position)
+            return DocumentLink(Document(path), position)
         }
 
         return null
     }
 
-    override suspend fun metadata(document: Korpus.Document): Korpus.DocumentMetadata {
+    override suspend fun metadata(document: Document): DocumentMetadata {
         val file = File(target, document.path)
         return file.metadata
     }
 
-    override suspend fun properties(document: Korpus.Document): Korpus.DocumentProperties {
+    override suspend fun properties(document: Document): DocumentProperties {
         return document.props
     }
 
-    override suspend fun fetch(document: Korpus.Document): Korpus.DocumentContent {
+    override suspend fun fetch(document: Document): DocumentContent {
         val metadata = document.metadata
-        if (metadata.type == Korpus.DocumentType.FOLDER) {
-            return Korpus.DocumentContent(
+        if (metadata.type == DocumentType.FOLDER) {
+            return DocumentContent(
                 document,
                 metadata,
-                if (document == Korpus.Document.ROOT) filteredKorpii()
+                if (document == Document.ROOT) filteredKorpii()
                 else document.file.readFolder()
             )
         }
-        return Korpus.DocumentContent(document, metadata, document.file.readText())
+        return DocumentContent(document, metadata, document.file.readText())
     }
 
-    override suspend fun parse(document: Korpus.Document): ImdexNode {
+    override suspend fun parse(document: Document): ImdexNode {
         val metadata = document.metadata
-        if (metadata.type == Korpus.DocumentType.FOLDER) {
+        if (metadata.type == DocumentType.FOLDER) {
             val base =
-                if (document == Korpus.Document.ROOT) filteredKorpii()
+                if (document == Document.ROOT) filteredKorpii()
                 else document.file.readFolder()
             return root(base) {
                 table {
@@ -139,12 +147,14 @@ class ImdexService(
     }
 
     private fun File.readFolder(): String {
-        return (listOf(
-            "." to ".",
-            ".." to ".."
-        ) + list().filter { !it.endsWith(".imdex") && !it.endsWith(".props") }.map {
-            it to File(this, it).metadata.label
-        }.sortedBy { it.second }).joinToString("\n") {
+        return (
+            listOf(
+                "." to ".",
+                ".." to ".."
+            ) + list().orEmpty().filter { !it.endsWith(".imdex") && !it.endsWith(".props") }.map {
+                it to (File(this, it).metadata.label)
+            }.sortedBy { it.second }
+            ).joinToString("\n") {
             "${it.first}\r${it.second}"
         }
     }
@@ -155,17 +165,17 @@ class ImdexService(
         }
     }
 
-    val Korpus.Document.file: File
+    val Document.file: File
         get() = File(target, path)
 
-    var Korpus.Document.metadata: Korpus.DocumentMetadata
+    var Document.metadata: DocumentMetadata
         get() = file.metadata
         set(value) {
             file.metadata = value
         }
 
-    var Korpus.Document.props: Korpus.DocumentProperties
-        get() = file.props ?: Korpus.DocumentProperties(this, emptyMap())
+    var Document.props: DocumentProperties
+        get() = file.props ?: DocumentProperties(this, emptyMap())
         set(value) {
             file.props = value
         }

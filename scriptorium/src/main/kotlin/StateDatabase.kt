@@ -15,8 +15,8 @@
  */
 package com.monkopedia.scriptorium
 
-import com.monkopedia.imdex.KorpusManager.KorpusType
-import com.monkopedia.imdex.Scriptorium.KorpusInfo
+import com.monkopedia.imdex.KorpusInfo
+import com.monkopedia.imdex.KorpusType
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.io.File

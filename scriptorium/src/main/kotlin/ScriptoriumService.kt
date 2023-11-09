@@ -15,21 +15,21 @@
  */
 package com.monkopedia.scriptorium
 
+import com.monkopedia.imdex.Document
+import com.monkopedia.imdex.DocumentMetadata
+import com.monkopedia.imdex.DocumentProperties
+import com.monkopedia.imdex.DocumentType
 import com.monkopedia.imdex.Imdex
 import com.monkopedia.imdex.Korpus
-import com.monkopedia.imdex.Korpus.Document
-import com.monkopedia.imdex.Korpus.DocumentMetadata
-import com.monkopedia.imdex.Korpus.DocumentProperties
+import com.monkopedia.imdex.KorpusInfo
 import com.monkopedia.imdex.KorpusManager
 import com.monkopedia.imdex.ProfileManager
 import com.monkopedia.imdex.Scriptorium
-import com.monkopedia.imdex.Scriptorium.KorpusInfo
-import com.monkopedia.ksrpc.Service
+import java.io.File
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.io.File
 
-class ScriptoriumService(private val config: Config) : Service(), Scriptorium {
+class ScriptoriumService(private val config: Config) : Scriptorium {
 
     val target = File(config.homeFile, "content")
 
@@ -90,7 +90,7 @@ val File.metadataFile: File
             it.writeText(
                 Json.encodeToString(
                     DocumentMetadata.serializer(),
-                    DocumentMetadata(Korpus.DocumentType.FOLDER, "", it.name)
+                    DocumentMetadata(DocumentType.FOLDER, "", it.name)
                 )
             )
         }

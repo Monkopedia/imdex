@@ -15,29 +15,31 @@
  */
 package com.monkopedia.scriptorium
 
-import com.monkopedia.imdex.Korpus
-import com.monkopedia.imdex.Korpus.Document
+import com.monkopedia.imdex.CreateKorpus
+import com.monkopedia.imdex.DATA_PATH_KEY
+import com.monkopedia.imdex.DataType.ARTIFACT
+import com.monkopedia.imdex.DataType.BOOLEAN
+import com.monkopedia.imdex.DataType.INT
+import com.monkopedia.imdex.DataType.PATH
+import com.monkopedia.imdex.DataType.STRING
+import com.monkopedia.imdex.Document
+import com.monkopedia.imdex.ID_KEY
+import com.monkopedia.imdex.KorpusDataType
+import com.monkopedia.imdex.KorpusInfo
+import com.monkopedia.imdex.KorpusKeyInfo
 import com.monkopedia.imdex.KorpusManager
-import com.monkopedia.imdex.KorpusManager.DataType.ARTIFACT
-import com.monkopedia.imdex.KorpusManager.DataType.BOOLEAN
-import com.monkopedia.imdex.KorpusManager.DataType.INT
-import com.monkopedia.imdex.KorpusManager.DataType.PATH
-import com.monkopedia.imdex.KorpusManager.DataType.STRING
-import com.monkopedia.imdex.KorpusManager.KorpusDataType
-import com.monkopedia.imdex.KorpusManager.KorpusKeyInfo
-import com.monkopedia.imdex.KorpusManager.KorpusType
-import com.monkopedia.imdex.Scriptorium.KorpusInfo
-import com.monkopedia.ksrpc.Service
+import com.monkopedia.imdex.KorpusType
+import com.monkopedia.imdex.UpdateKorpus
+import java.io.File
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.io.File
 
 class KorpusManagerService(
     private val config: Config,
     private val scriptorium: ScriptoriumService
-) : Service(), KorpusManager {
+) : KorpusManager {
 
     override suspend fun createType(type: KorpusType): Unit = newSuspendedTransaction {
         KorpusTypeDao.new {
@@ -69,7 +71,7 @@ class KorpusManagerService(
     }
 
     override suspend fun getKorpusType(type: String): KorpusType? = newSuspendedTransaction {
-        if (type == KorpusManager.CreateKorpus.DEFAULT_TYPE) {
+        if (type == CreateKorpus.DEFAULT_TYPE) {
             DEFAULT_TYPE
         } else {
             KorpusTypeDao.find {
@@ -78,7 +80,7 @@ class KorpusManagerService(
         }
     }
 
-    override suspend fun createKorpus(korpus: KorpusManager.CreateKorpus): String {
+    override suspend fun createKorpus(korpus: CreateKorpus): String {
         return newSuspendedTransaction(db = StateDatabase.database) {
             val newItem = KorpusDao.new { }
             commit()
@@ -94,7 +96,7 @@ class KorpusManagerService(
         }
     }
 
-    override suspend fun updateKorpus(korpus: KorpusManager.UpdateKorpus): String {
+    override suspend fun updateKorpus(korpus: UpdateKorpus): String {
         return newSuspendedTransaction(db = StateDatabase.database) {
             val k = KorpusDao.findById(korpus.id.toLong())
                 ?: throw IllegalArgumentException("Can't find ${korpus.id}")
@@ -114,17 +116,17 @@ class KorpusManagerService(
 
     private fun KorpusInfo.ensureValid(): KorpusInfo {
         var ret = this
-        if (!ret.config.containsKey(Korpus.ID_KEY)) {
+        if (!ret.config.containsKey(ID_KEY)) {
             ret = ret.copy(
                 config = ret.config.toMutableMap().also {
-                    it[Korpus.ID_KEY] = id
+                    it[ID_KEY] = id
                 }
             )
         }
-        if (!ret.config.containsKey(Korpus.DATA_PATH_KEY)) {
+        if (!ret.config.containsKey(DATA_PATH_KEY)) {
             ret = ret.copy(
                 config = ret.config.toMutableMap().also {
-                    it[Korpus.DATA_PATH_KEY] =
+                    it[DATA_PATH_KEY] =
                         File(this@KorpusManagerService.config.homeFile, "korpus/$id").absolutePath
                 }
             )
@@ -147,7 +149,7 @@ class KorpusManagerService(
     companion object {
         val DEFAULT_TYPE = KorpusType(
             "Default",
-            KorpusManager.CreateKorpus.DEFAULT_TYPE,
+            CreateKorpus.DEFAULT_TYPE,
             listOf(KorpusKeyInfo.LABEL, KorpusKeyInfo.EDITABLE)
         )
     }
